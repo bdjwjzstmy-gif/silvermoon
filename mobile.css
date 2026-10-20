@@ -1,0 +1,271 @@
+/* ============================================================
+   银月冒险家协会 · 移动端专属样式
+   - 底部标签栏（iOS 风格，含安全区适配）
+   - 原生滚动回弹、下拉刷新、触屏手势
+   - 弹窗移动端布局修正（全屏抽屉 + 粘性头尾）
+   - PWA 安装提示、桌面快捷方式引导
+   ============================================================ */
+
+/* ---------- 底部标签栏 ---------- */
+.guild-tabbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 55;
+  display: flex;
+  align-items: stretch;
+  height: 56px;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  background: rgba(10, 14, 26, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 215, 138, 0.16);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.45);
+}
+.guild-tabbar button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  color: rgba(214, 214, 231, 0.62);
+  font-size: 10.5px;
+  letter-spacing: 0.3px;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .18s ease, transform .14s ease;
+}
+.guild-tabbar button .tb-ic {
+  font-size: 21px;
+  line-height: 1;
+  filter: grayscale(0.55) brightness(0.85);
+  transition: filter .18s ease, transform .18s cubic-bezier(.2,.9,.3,1.4);
+}
+.guild-tabbar button.on {
+  color: var(--gold);
+  font-weight: 700;
+}
+.guild-tabbar button.on .tb-ic {
+  filter: none;
+  transform: translateY(-2px) scale(1.12);
+}
+.guild-tabbar button .tb-badge {
+  position: absolute;
+  top: 4px; right: calc(50% - 22px);
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  color: #13111c;
+  background: var(--gold);
+  border-radius: 8px;
+  font-weight: 800;
+  box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+
+/* ---------- 桌面端隐藏移动控件 ---------- */
+@media (min-width: 821px) {
+  .guild-tabbar,
+  .guild-pull-hint,
+  .guild-install-bar { display: none !important; }
+}
+
+/* ---------- 安全区：刘海 / 圆角屏 ---------- */
+.guild-topbar {
+  padding-top: calc(12px + env(safe-area-inset-top));
+}
+body {
+  padding-top: calc(56px + env(safe-area-inset-top));
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+/* ---------- 原生滚动回弹（仅 iOS） ---------- */
+@supports (-webkit-overflow-scrolling: touch) {
+  html { -webkit-text-size-adjust: 100%; }
+  .guild-modal .modal-body,
+  .mail-list,
+  .quests-table-wrapper,
+  .section { -webkit-overflow-scrolling: touch; }
+}
+
+/* ---------- 下拉刷新 ---------- */
+.guild-pull-hint {
+  position: fixed;
+  top: calc(56px + env(safe-area-inset-top));
+  left: 0; right: 0;
+  z-index: 50;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: rgba(214, 214, 231, 0.7);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.guild-pull-hint.show { opacity: 1; }
+.guild-pull-hint .spinner {
+  width: 15px; height: 15px;
+  border: 2px solid rgba(255,215,138,.3);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- 弹窗移动端：全屏抽屉 + 粘性头尾 ---------- */
+@media (max-width: 820px) {
+  .guild-modal {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 0 !important;
+    transform: translateY(100%);
+    transition: transform .32s cubic-bezier(.3,.9,.35,1);
+  }
+  .guild-modal.show { transform: translateY(0); }
+  .guild-modal .modal-head {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(10, 14, 26, 0.98);
+    border-bottom: 1px solid rgba(255, 215, 138, 0.16);
+  }
+  .guild-modal .modal-head h3 { font-size: 17px; margin: 0; flex: 1; }
+  .guild-modal .modal-body {
+    padding: 18px 16px 40px;
+    max-height: none;
+    overflow: visible;
+  }
+  .guild-modal .modal-foot {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    background: rgba(10, 14, 26, 0.98);
+    border-top: 1px solid rgba(255, 215, 138, 0.16);
+  }
+  .guild-modal .modal-foot .guild-btn { width: 100%; flex: none; }
+  .guild-modal .modal-close {
+    position: static;
+    width: 34px; height: 34px;
+    font-size: 19px;
+    border: 1px solid rgba(255, 215, 138, 0.3);
+    border-radius: 50%;
+    background: rgba(255,255,255,.04);
+  }
+  /* 详情页顶部返回条 */
+  .detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+}
+
+/* ---------- PWA 安装提示 ---------- */
+.guild-install-bar {
+  position: fixed;
+  left: 12px; right: 12px; bottom: 74px;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 13px;
+  background: linear-gradient(135deg, rgba(20,16,40,.98), rgba(26,22,48,.98));
+  border: 1px solid rgba(255, 215, 138, 0.3);
+  border-radius: 14px;
+  box-shadow: 0 10px 32px rgba(0,0,0,.55);
+}
+.guild-install-bar .ib-ic {
+  width: 40px; height: 40px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: var(--gold-grad);
+  border-radius: 11px;
+}
+.guild-install-bar .ib-tx { flex: 1; min-width: 0; }
+.guild-install-bar .ib-tx b { display: block; font-size: 13.5px; color: #fff; }
+.guild-install-bar .ib-tx span { font-size: 11.5px; color: rgba(214,214,231,.68); }
+.guild-install-bar .ib-act { flex: none; }
+
+/* ---------- 安装指引入口（iOS 无 beforeinstallprompt，用它兜底） ---------- */
+.guild-install-help {
+  position: fixed;
+  left: 12px; right: 12px; bottom: 74px;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 14px;
+  background: linear-gradient(135deg, rgba(20,16,40,.98), rgba(26,22,48,.98));
+  border: 1px solid rgba(255, 215, 138, 0.3);
+  border-radius: 14px;
+  box-shadow: 0 10px 32px rgba(0,0,0,.55);
+  font-size: 13.5px;
+  color: var(--gold);
+  text-decoration: none;
+}
+
+/* ---------- 手势提示（首次进入） ---------- */
+.guild-gesture-tip {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 90px;
+  background: rgba(4,6,14,.62);
+  backdrop-filter: blur(2px);
+}
+.guild-gesture-tip .gt-card {
+  width: min(82vw, 320px);
+  padding: 18px;
+  text-align: center;
+  background: rgba(16,14,32,.99);
+  border: 1px solid rgba(255,215,138,.26);
+  border-radius: 16px;
+}
+.guild-gesture-tip .gt-card .gt-ic { font-size: 30px; margin-bottom: 8px; }
+.guild-gesture-tip .gt-card b { display: block; font-size: 15px; margin-bottom: 5px; }
+.guild-gesture-tip .gt-card p { font-size: 12.5px; color: rgba(214,214,231,.72); line-height: 1.6; margin: 0 0 13px; }
+
+/* ---------- 桌面端补充：视口宽度警告 ---------- */
+.guild-viewport-warn {
+  display: none;
+}
+@media (min-width: 821px) and (max-width: 1160px) {
+  .guild-viewport-warn {
+    display: block;
+    margin: 0 0 14px;
+    padding: 9px 13px;
+    font-size: 12.5px;
+    color: rgba(255,215,138,.9);
+    background: rgba(255,215,138,.07);
+    border: 1px dashed rgba(255,215,138,.28);
+    border-radius: 9px;
+  }
+}

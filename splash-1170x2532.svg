@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532">
+  <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0a0e1a"/><stop offset="1" stop-color="#15102c"/>
+  </linearGradient></defs>
+  <rect width="1170" height="2532" fill="url(#sg)"/>
+  <g transform="translate(585 1114)">
+    <circle r="270" fill="none" stroke="#ffd78a" stroke-width="9" opacity=".35"/>
+    <circle r="200" fill="#0d1124" stroke="#ffd78a" stroke-width="11"/>
+    <path d="M0 -92 L62 -30 L50 44 L-50 44 L-62 -30 Z" fill="#ffd78a"/>
+    <circle r="22" fill="#0d1124" stroke="#ffd78a" stroke-width="5"/>
+  </g>
+  <text x="__CX__" y="1494" font-family="-apple-system, sans-serif" font-size="52" font-weight="700"
+        fill="#ffe9b8" text-anchor="middle" letter-spacing="6">银月冒险家协会</text>
+  <text x="__CX__" y="1574" font-family="-apple-system, sans-serif" font-size="26"
+        fill="#8d8aa3" text-anchor="middle" letter-spacing="3">SILVER MOON GUILD</text>
+</svg>

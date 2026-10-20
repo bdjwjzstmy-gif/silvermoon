@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0e1a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f0e2" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="银月公会">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="银月公会">
+<meta name="msapplication-TileImage" content="icon-144.png">
+<meta name="msapplication-TileColor" content="#0a0e1a">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+<link rel="apple-touch-startup-image" href="splash-1170x2532.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-96.png">
+<link rel="manifest" href="manifest.json">
+<title>银月冒险家协会 · Silver Moon Adventurers Guild</title>
+<script>
+/* PWA Service Worker 注册（http 下自动跳过，不会报错） */
+(function(){
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      var ok = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if (!ok) return;
+      navigator.serviceWorker.register('sw.js').then(function(r){
+        console.log('[SMG] SW registered:', r.scope);
+      }).catch(function(e){
+        console.warn('[SMG] SW register failed:', e);
+      });
+    });
+  }
+})();
+</script>
+<style>
+/* ============ 基础变量 ============ */
+:root{
+  --bg:#0a0814; --bg2:#120e24; --ink:#e9e6f5; --sub:#a89fd0;
+  --gold:#e8c86a; --gold2:#f4e2a8; --line:rgba(232,200,106,.22);
+  --s:#e05b4a; --a:#d99a3f; --b:#4f9fd0; --c:#7bb87b;
+  --card:rgba(26,22,46,.72); --shadow:0 18px 50px rgba(0,0,0,.45);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.7; overflow-x:hidden;
+}
+a{color:var(--gold);text-decoration:none}
+::selection{background:var(--gold);color:#201a3d}
+
+/* ============ 粒子背景 ============ */
+#particles{position:fixed;inset:0;z-index:0;display:block}
+.section{position:relative;z-index:2;padding:90px 24px}
+.container{max-width:1180px;margin:0 auto}
+.eyebrow{color:var(--gold);letter-spacing:.32em;font-size:.8rem;text-transform:uppercase;margin-bottom:10px}
+.h2{font-size:2.4rem;font-weight:800;letter-spacing:.04em;line-height:1.25}
+.h2 em{font-style:normal;color:var(--gold)}
+.lead{color:var(--sub);max-width:640px;margin-top:14px;font-size:1.02rem}
+
+/* ============ 导航 ============ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;backdrop-filter:blur(12px);background:rgba(10,8,20,.55);border-bottom:1px solid transparent;
+  transition:.3s;
+}
+.nav.scrolled{border-bottom-color:var(--line);background:rgba(10,8,20,.86)}
+.logo{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.06em;font-size:1.02rem}
+.logo .sigil{
+  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:1.25rem;
+  background:radial-gradient(circle at 35% 30%,#fff6cf,#e8c86a 45%,#8a6a1f);color:#2a2247;font-weight:900;
+  box-shadow:0 0 18px rgba(232,200,106,.55);
+}
+.nav-links{display:flex;gap:26px;align-items:center}
+.nav-links a{font-size:.92rem;color:#cfc8e6;transition:.2s}
+.nav-links a:hover{color:var(--gold)}
+.btn-nav{
+  padding:8px 18px;border:1px solid var(--line);border-radius:30px;color:var(--gold)!important;
+  background:rgba(232,200,106,.08);
+}
+.btn-nav:hover{background:var(--gold);color:#201a3d!important}
+.menu-btn{display:none;background:none;border:none;color:var(--gold);font-size:1.7rem;cursor:pointer}
+
+/* ============ 通用按钮 ============ */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:34px;font-weight:700;
+  font-size:.95rem;cursor:pointer;border:1px solid transparent;transition:.25s;letter-spacing:.03em;
+}
+.btn-primary{background:linear-gradient(135deg,#f4e2a8,#d8aa3c);color:#241d40;box-shadow:0 8px 24px rgba(232,200,106,.32)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(232,200,106,.48)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{padding:8px 18px;font-size:.86rem;border-radius:26px}
+
+/* ============ Hero ============ */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:140px 24px 90px;position:relative;z-index:2}
+.hero-inner{max-width:820px}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:9px;padding:7px 18px;border-radius:30px;font-size:.82rem;
+  color:var(--gold2);border:1px solid var(--line);background:rgba(232,200,106,.07);margin-bottom:26px;
+}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:#5fd0a0;box-shadow:0 0 10px #5fd0a0;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.hero h1{
+  font-size:clamp(2.4rem,6.5vw,4.8rem);font-weight:900;letter-spacing:.02em;line-height:1.12;
+  background:linear-gradient(180deg,#fffdf6 10%,#e8c86a 55%,#b8862b);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p{color:var(--sub);font-size:1.12rem;max-width:600px;margin:22px auto 34px}
+.hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.hero-stats{display:flex;gap:46px;justify-content:center;margin-top:60px;flex-wrap:wrap}
+.hero-stats div{text-align:center}
+.hero-stats b{display:block;font-size:2rem;color:var(--gold);font-weight:800}
+.hero-stats span{font-size:.82rem;color:var(--sub);letter-spacing:.08em}
+
+/* ============ 统计条 ============ */
+.stats{background:linear-gradient(180deg,rgba(20,16,40,.9),rgba(14,11,28,.95));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;text-align:center;padding:24px 0}
+.stat-grid b{display:block;font-size:2.5rem;color:var(--gold);font-weight:800;line-height:1}
+.stat-grid span{color:var(--sub);font-size:.86rem;letter-spacing:.05em}
+
+/* ============ 卡片通用 ============ */
+.grid{display:grid;gap:24px}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.card{
+  background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:28px;
+  backdrop-filter:blur(10px);transition:.3s;
+}
+.card:hover{transform:translateY(-5px);border-color:var(--line);box-shadow:var(--shadow)}
+.card h3{font-size:1.2rem;margin-bottom:10px}
+.card p{color:var(--sub);font-size:.93rem}
+
+/* ============ 任务板 ============ */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:34px 0 26px}
+.chip{
+  padding:8px 18px;border-radius:26px;font-size:.86rem;cursor:pointer;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);color:#c7bfdd;transition:.2s;user-select:none;
+}
+.chip:hover{border-color:var(--gold);color:var(--gold2)}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#241d40;font-weight:700}
+.toolbar .spacer{flex:1}
+.search{
+  padding:9px 16px;border-radius:26px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);
+  color:var(--ink);font-size:.9rem;outline:none;min-width:200px;
+}
+.search:focus{border-color:var(--gold)}
+.quests{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.quest{
+  background:linear-gradient(160deg,rgba(30,26,52,.85),rgba(20,17,38,.85));border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px;transition:.28s;position:relative;overflow:hidden;
+}
+.quest:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.quest::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--r,var(--gold))}
+.q-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.rank{
+  font-weight:900;font-size:.85rem;padding:3px 11px;border-radius:20px;letter-spacing:.06em;
+  background:var(--r,var(--gold));color:#241d40;flex:none;
+}
+.q-title{font-size:1.14rem;font-weight:700;line-height:1.35}
+.q-meta{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-size:.76rem;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.07);color:var(--sub);border:1px solid rgba(255,255,255,.08)}
+.tag.reward{color:var(--gold2);border-color:var(--line);background:rgba(232,200,106,.09)}
+.q-desc{color:var(--sub);font-size:.9rem;flex:1}
+.q-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)}
+.q-price{font-weight:800;color:var(--gold);font-size:1.05rem}
+.q-empty{grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)}
+
+/* ============ 活动 ============ */
+.activities{display:grid;gap:18px}
+.act{display:grid;grid-template-columns:130px 1fr auto;gap:22px;align-items:center;background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:20px 24px;transition:.25s}
+.act:hover{border-color:var(--line);background:rgba(34,29,58,.8)}
+.act-date{text-align:center;padding-right:22px;border-right:1px solid rgba(255,255,255,.1)}
+.act-date b{display:block;font-size:2rem;color:var(--gold);line-height:1;font-weight:800}
+.act-date span{font-size:.82rem;color:var(--sub)}
+.act-body h3{font-size:1.18rem;margin-bottom:6px}
+.act-body p{color:var(--sub);font-size:.92rem}
+.act-state{font-size:.78rem;padding:5px 13px;border-radius:20px;font-weight:700;white-space:nowrap}
+.state-open{background:rgba(95,208,160,.15);color:#5fd0a0;border:1px solid rgba(95,208,160,.4)}
+.state-soon{background:rgba(232,200,106,.13);color:var(--gold2);border:1px solid var(--line)}
+.state-full{background:rgba(224,91,74,.14);color:#e05b4a;border:1px solid rgba(224,91,74,.4)}
+
+/* ============ 关于 / 服务 ============ */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.split .h2{margin-bottom:16px}
+.icon{font-size:1.5rem;margin-bottom:12px;display:block}
+.about-list{list-style:none;margin-top:20px;display:grid;gap:12px}
+.about-list li{display:flex;gap:12px;color:var(--sub);font-size:.95rem}
+.about-list li::before{content:"❖";color:var(--gold);flex:none;margin-top:2px}
+.bg-alt{background:linear-gradient(180deg,transparent,rgba(20,16,40,.6))}
+
+/* ============ 登录 / 注册 ============ */
+.auth-wrap{max-width:940px;margin:0 auto;display:grid;grid-template-columns:1fr 380px;gap:0;background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:22px;overflow:hidden;backdrop-filter:blur(12px)}
+.auth-form{padding:46px 44px}
+.auth-banner{background:linear-gradient(160deg,#2a2247,#160f2c);padding:46px 34px;display:flex;flex-direction:column;justify-content:center;gap:16px;border-left:1px solid rgba(255,255,255,.07)}
+.auth-banner h3{color:var(--gold2);font-size:1.4rem}
+.auth-banner li{color:#c7bfdd;font-size:.92rem;list-style:none;padding-left:22px;position:relative}
+.auth-banner li::before{content:"✦";position:absolute;left:0;color:var(--gold);font-size:.75rem;top:2px}
+.tabs{display:flex;gap:6px;background:rgba(0,0,0,.28);padding:5px;border-radius:12px;margin-bottom:28px}
+.tab{flex:1;text-align:center;padding:10px;border-radius:9px;cursor:pointer;font-weight:700;font-size:.92rem;color:var(--sub);transition:.2s}
+.tab.on{background:rgba(232,200,106,.14);color:var(--gold2)}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:.84rem;color:var(--sub);margin-bottom:7px;letter-spacing:.04em}
+.field input,.field select,.field textarea{
+  width:100%;padding:12px 14px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.3);
+  color:var(--ink);font-size:.95rem;font-family:inherit;outline:none;transition:.2s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);background:rgba(0,0,0,.45)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.check{display:flex;gap:9px;align-items:flex-start;font-size:.86rem;color:var(--sub);margin-bottom:24px}
+.check input{margin-top:4px;accent-color:var(--gold)}
+.err{color:#ff8a7a;font-size:.82rem;margin-top:6px;min-height:14px}
+.hint{font-size:.8rem;color:var(--sub);margin-top:6px}
+
+/* ============ 档案 ============ */
+
+/* ============ 公会信箱 ============ */
+.mail-panel{width:min(720px,94vw);max-height:88vh;background:linear-gradient(180deg,#161a2e,#100f1c);border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;overflow:hidden}
+.mail-panel h3{font-family:var(--serif)}
+.mp-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex:0 0 auto}
+.mp-title{font-size:1.3rem;font-weight:800;letter-spacing:.08em}
+.mp-sub{font-size:.82rem;color:var(--sub);margin-top:4px}
+.mp-close{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--txt);font-size:1.4rem;cursor:pointer;flex:0 0 auto}
+.mp-list{flex:1 1 auto;overflow-y:auto;padding:10px 12px 22px}
+.ml-item{display:flex;gap:14px;align-items:flex-start;padding:15px 14px;border-radius:13px;cursor:pointer;transition:.2s;border:1px solid transparent}
+.ml-item+* {margin-top:6px}
+.ml-item:hover{background:rgba(232,200,106,.06);border-color:rgba(232,200,106,.18)}
+.ml-item.unread{background:rgba(232,200,106,.07)}
+.ml-item.unread .ml-subject{color:#fff}
+.ml-dot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--gold);margin-top:7px;box-shadow:0 0 8px var(--gold)}
+.ml-item:not(.unread) .ml-dot{background:transparent;border:1px solid var(--line2)}
+.ml-wrap{flex:1 1 auto;min-width:0}
+.ml-from{font-size:.78rem;color:var(--gold);letter-spacing:.05em;font-family:var(--serif)}
+.ml-subject{font-weight:700;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml-peek{font-size:.82rem;color:var(--sub);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml-when{font-size:.74rem;color:var(--sub);text-align:right;white-space:nowrap;margin-left:8px}
+.mp-empty{padding:60px 20px;text-align:center;color:var(--sub);display:none}
+.mp-empty-ic{font-size:3rem;opacity:.35;margin-bottom:12px}
+.mp-read{flex:1 1 auto;overflow-y:auto;padding:0 22px 24px;display:none}
+.mr-head{padding:22px 0 14px;border-bottom:1px dashed var(--line)}
+.mr-tag{display:inline-block;font-size:.72rem;letter-spacing:.1em;color:var(--gold);border:1px solid rgba(232,200,106,.4);padding:3px 10px;border-radius:20px;margin-bottom:10px}
+.mr-title{font-size:1.35rem;line-height:1.4}
+.mr-meta{font-size:.8rem;color:var(--sub);margin-top:10px}
+.mr-body{width:100%;min-height:260px;border:1px solid var(--line);border-radius:12px;margin-top:16px;background:#faf6ea;color:#23202c}
+.mr-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.ml-item.sel{border-color:rgba(232,200,106,.45);background:rgba(232,200,106,.09)}
+/* ============ 离线条 ============ */
+.net-bar{position:fixed;left:0;right:0;top:0;z-index:200;background:linear-gradient(90deg,#8a3b2c,#b0552f);color:#fff;font-size:.82rem;letter-spacing:.05em;text-align:center;padding:9px 14px;transform:translateY(-110%);transition:.35s;box-shadow:0 4px 18px rgba(0,0,0,.4)}
+.net-bar.show{transform:none}
+.net-dot{width:9px;height:9px;border-radius:50%;background:#5fd0a0;box-shadow:0 0 8px #5fd0a0;flex:0 0 auto;margin-left:6px;transition:.3s}
+.net-dot.off{background:#ff8a5c;box-shadow:0 0 8px #ff8a5c}
+/* ============ 审核流 ============ */
+.rv-list{display:flex;flex-direction:column;gap:10px;max-height:62vh;overflow-y:auto;margin-top:6px}
+.rv-item{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px}
+.rv-info{flex:1 1 auto;min-width:0}
+.rv-t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-s{font-size:.78rem;color:var(--sub);margin-top:3px}
+.rv-meta{font-size:.74rem;color:var(--sub);white-space:nowrap;margin-left:8px}
+.badge{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 5px;border-radius:20px;background:#c94242;color:#fff;font-size:.68rem;display:none;align-items:center;justify-content:center;border:2px solid #100f1c}
+.profile{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:300px 1fr;gap:26px}
+.avatar-card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:30px;text-align:center}
+.ava{
+  width:118px;height:118px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;font-size:2.6rem;font-weight:900;
+  background:radial-gradient(circle at 35% 30%,#fff6cf,#e8c86a 45%,#8a6a1f);color:#2a2247;
+  box-shadow:0 0 26px rgba(232,200,106,.45);
+}
+.lv-bar{height:9px;border-radius:20px;background:rgba(0,0,0,.4);overflow:hidden;margin:14px 0 8px}
+.lv-bar i{display:block;height:100%;background:linear-gradient(90deg,#d8aa3c,#f4e2a8);border-radius:20px;transition:width 1s ease}
+.xp-txt{font-size:.8rem;color:var(--sub)}
+.ach-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.ach{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 8px;text-align:center;transition:.2s}
+.ach.unlocked{border-color:var(--line);background:rgba(232,200,106,.08)}
+.ach .e{font-size:1.5rem;display:block;opacity:.35;filter:grayscale(1)}
+.ach.unlocked .e{opacity:1;filter:none}
+.ach span{font-size:.74rem;color:var(--sub);display:block;margin-top:5px}
+.panel{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:28px}
+.panel h3{font-size:1.2rem;margin-bottom:6px}
+.panel .sub{color:var(--sub);font-size:.86rem;margin-bottom:22px}
+.kv{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 26px}
+.kv div span{display:block;font-size:.78rem;color:var(--sub);letter-spacing:.05em}
+.kv div b{font-size:1.02rem;font-weight:700}
+.records{display:grid;gap:12px;margin-top:6px}
+.rec{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:13px 16px;background:rgba(0,0,0,.24);border-radius:11px;border:1px solid rgba(255,255,255,.06)}
+.rec .nm{font-weight:700;font-size:.96rem}
+.rec .dt{font-size:.8rem;color:var(--sub)}
+.rec .rk{font-size:.8rem;font-weight:800;padding:2px 9px;border-radius:16px;background:var(--r,var(--gold));color:#241d40}
+.empty{text-align:center;color:var(--sub);padding:34px;font-size:.92rem}
+
+
+/* ============ 验证码 / 找回 ============ */
+.vcode-wrap{display:flex;gap:10px}
+.vcode-wrap input{flex:1}
+.vcode-btn{
+  flex:0 0 auto;white-space:nowrap;padding:0 14px;height:46px;border:1px solid var(--line);border-radius:11px;
+  background:rgba(255,255,255,.04);color:var(--gold2);font-size:.82rem;font-weight:700;cursor:pointer;transition:.2s;
+}
+.vcode-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+.vcode-btn:disabled{opacity:.45;cursor:not-allowed}
+.field .hint{font-size:.76rem;color:var(--sub);margin-top:6px}
+.pw-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:.8rem;color:var(--sub)}
+.pw-meta a{color:var(--gold2)}
+.strength{display:flex;gap:5px;margin-top:10px}
+.strength i{height:4px;flex:1;border-radius:4px;background:rgba(255,255,255,.14);transition:.25s}
+.strength.weak i:nth-child(-n+1){background:#ff6b6b}
+.strength.mid i:nth-child(-n+2){background:#e8aa3c}
+.strength.strong i:nth-child(-n+3){background:#5fd0a0}
+.strength.strong i:nth-child(-n+4){background:#5fd0a0}
+.verify-box{text-align:center;padding:8px 0 6px}
+.verify-box .big{font-size:1.9rem;letter-spacing:.28em;font-weight:900;color:var(--gold2);margin:10px 0 4px;font-variant-numeric:tabular-nums}
+.verify-box .sub{font-size:.82rem;color:var(--sub)}
+.verify-box .sub b{color:var(--gold2);font-weight:700}
+.vs-title{font-size:1.05rem;font-weight:800;margin:2px 0 4px}
+.vs-desc{font-size:.86rem;color:var(--sub);margin-bottom:18px}
+.vs-tips{font-size:.8rem;color:var(--sub);line-height:1.85;margin-top:20px;text-align:left;background:rgba(0,0,0,.22);border-radius:11px;padding:14px 16px}
+.vs-tips b{color:var(--gold)}
+
+/* ============ 管理后台 ============ */
+.admin-bar{
+  position:fixed;inset:0 0 auto;z-index:60;display:flex;align-items:center;gap:18px;padding:11px 24px;
+  background:linear-gradient(90deg,rgba(10,8,22,.97),rgba(20,16,40,.94));border-bottom:1px solid var(--line);
+  backdrop-filter:blur(12px);transform:translateY(-110%);transition:.4s;
+}
+.admin-bar.in{transform:translateY(0)}
+.admin-bar .ab-l{display:flex;align-items:center;gap:10px}
+.admin-bar .ab-l .sigil{width:30px;height:30px;font-size:.95rem}
+.admin-bar .ab-t{font-size:.95rem;font-weight:800}
+.admin-bar .ab-t small{display:block;font-size:.72rem;color:var(--sub);font-weight:500;letter-spacing:.06em;margin-top:1px}
+.admin-bar .ab-r{margin-left:auto;display:flex;align-items:center;gap:12px}
+.admin-bar .ab-r .who{font-size:.82rem;color:var(--sub)}
+.admin-bar .ab-r .who b{color:var(--gold2)}
+.ad-shortcut{
+  position:fixed;right:22px;bottom:22px;z-index:58;width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,#f4e2a8,#c8952c);color:#241d40;border:none;font-size:1.4rem;cursor:pointer;
+  box-shadow:0 14px 34px rgba(232,200,106,.4);transition:.25s;
+}
+.ad-shortcut:hover{transform:scale(1.08) rotate(8deg)}
+body.has-admin{padding-top:58px}
+body.has-admin .nav{top:58px}
+body.has-admin .toast{bottom:82px}
+body.has-admin #adShortcut{display:block}
+#adShortcut{display:none}
+.ad-overlay{position:fixed;inset:0;z-index:90;display:none;overflow:auto;padding:78px 24px 40px;background:radial-gradient(1200px 700px at 50% -10%,rgba(232,200,106,.09),transparent 60%),#0a0816}
+.ad-overlay.in{display:block}
+.ad-shell{max-width:1180px;margin:0 auto}
+.ad-head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.ad-head h2{font-size:1.85rem}
+.ad-head .sub{color:var(--sub);font-size:.86rem;margin-top:6px}
+.ad-tabs{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.ad-tab{padding:9px 18px;border-radius:30px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:#b7add4;font-size:.85rem;cursor:pointer;transition:.2s}
+.ad-tab.on{background:linear-gradient(135deg,#f4e2a8,#c8952c);color:#241d40;border-color:transparent;font-weight:700}
+.ad-tab .n{opacity:.55;font-size:.72rem;margin-left:5px}
+.ad-tab.on .n{opacity:.7}
+.ad-tab.on .n{color:#241d40}
+.ad-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:26px}
+.mtab{padding:26px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.mtab h3{font-size:1.15rem;margin-bottom:4px}
+.mtab .desc{font-size:.82rem;color:var(--sub);margin-bottom:20px}
+.frow{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.frow.three{grid-template-columns:1fr 1fr 1.2fr}
+.mtab textarea{width:100%;min-height:96px;padding:12px 13px;border-radius:11px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:#eee;font-family:inherit;font-size:.9rem;resize:vertical}
+.tag-pick{display:flex;flex-wrap:wrap;gap:8px}
+.tag-pick span{
+  padding:6px 13px;border-radius:20px;border:1px solid var(--line);font-size:.8rem;color:#b7add4;cursor:pointer;transition:.18s;user-select:none;
+}
+.tag-pick span.on{background:rgba(232,200,106,.16);border-color:var(--gold);color:var(--gold)}
+.chip-sm{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:16px;background:rgba(255,255,255,.06);font-size:.78rem;color:#cfc7e6}
+.chip-sm i{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+.qmanage{display:grid;gap:12px}
+.qm{display:flex;gap:14px;align-items:center;padding:15px 18px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.03);transition:.2s}
+.qm:hover{border-color:rgba(232,200,106,.5);transform:translateX(3px)}
+.qm .rk2{font-size:.78rem;font-weight:800;padding:3px 10px;border-radius:14px;background:var(--r,var(--gold));color:#241d40;white-space:nowrap}
+.qm .body{flex:1;min-width:0}
+.qm .body .t{font-weight:700;font-size:.96rem}
+.qm .body .d{font-size:.8rem;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.qm .acts{display:flex;gap:8px;flex-shrink:0}
+.switch{position:relative;width:44px;height:24px;border-radius:20px;background:rgba(255,255,255,.18);cursor:pointer;transition:.25s;flex-shrink:0}
+.switch i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.25s}
+.switch.on{background:linear-gradient(90deg,#5fd0a0,#3aa87c)}
+.switch.on i{left:22px}
+.mtable{width:100%;border-collapse:collapse;font-size:.86rem}
+.mtable th{text-align:left;padding:11px 12px;color:var(--sub);font-size:.76rem;letter-spacing:.06em;border-bottom:1px solid var(--line);white-space:nowrap}
+.mtable td{padding:12px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:middle}
+.mtable tr:hover td{background:rgba(232,200,106,.05)}
+.mtable .mini{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.74rem;font-weight:700}
+.mini.open{background:rgba(95,208,160,.16);color:#5fd0a0}
+.mini.soon{background:rgba(232,200,106,.16);color:var(--gold)}
+.mini.full{background:rgba(255,138,122,.16);color:#ff8a7a}
+.mtable .op{display:flex;gap:8px}
+.empty-m{text-align:center;color:var(--sub);padding:40px;font-size:.9rem}
+
+/* ============ 消息通知中心 ============ */
+#navNotif{position:relative}
+#navNotif .badge{top:-6px;right:-2px}
+.notif-panel{width:min(420px,92vw);max-height:82vh;background:linear-gradient(180deg,#161a2e,#100f1c);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.notif-tabs{display:flex;gap:6px;padding:14px 14px 0;border-bottom:1px solid var(--line);flex:0 0 auto}
+.notif-tab{flex:1;text-align:center;padding:8px 4px;font-size:.82rem;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
+.notif-tab.on{color:var(--gold2);border-bottom-color:var(--gold)}
+.notif-list{flex:1 1 auto;overflow-y:auto;padding:8px 10px 18px}
+.nt{display:flex;gap:12px;padding:12px 12px;border-radius:12px;cursor:pointer;transition:.18s;border:1px solid transparent}
+.nt+* {margin-top:4px}
+.nt:hover{background:rgba(232,200,106,.06);border-color:rgba(232,200,106,.16)}
+.nt.unread{background:rgba(232,200,106,.07)}
+.nt.unread .nt-t{color:#fff}
+.nt-ic{flex:0 0 auto;width:34px;height:34px;border-radius:10px;background:rgba(232,200,106,.12);border:1px solid var(--line);display:grid;place-items:center;font-size:1.05rem}
+.nt-b{flex:1 1 auto;min-width:0}
+.nt-t{font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nt-d{font-size:.8rem;color:var(--sub);margin-top:3px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nt-w{font-size:.72rem;color:var(--sub);white-space:nowrap;margin-left:6px}
+.nt-bar{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(232,200,106,.35);transform-origin:left}
+.nt-empty{padding:50px 20px;text-align:center;color:var(--sub);font-size:.9rem}
+.nt-empty-ic{font-size:2.6rem;opacity:.3;margin-bottom:10px}
+#notifDot{position:absolute;top:2px;right:6px;width:8px;height:8px;border-radius:50%;background:#c94242;box-shadow:0 0 6px #c94242;display:none}
+
+/* ============ 竞标 / 组队 ============ */
+.bid-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.bid-bar .frow{flex:1 1 240px;margin:0}
+.bid-list{display:grid;gap:12px}
+.bid{display:flex;gap:14px;align-items:center;padding:15px 18px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.03);transition:.2s}
+.bid:hover{border-color:rgba(232,200,106,.45)}
+.bid.won{background:rgba(95,208,160,.07);border-color:rgba(95,208,160,.4)}
+.bid.lost{opacity:.55}
+.bid .bid-main{flex:1 1 auto;min-width:0}
+.bid .bid-t{font-weight:700;font-size:.95rem}
+.bid .bid-s{font-size:.78rem;color:var(--sub);margin-top:3px}
+.bid .bid-amt{flex:0 0 auto;text-align:right;margin-right:10px}
+.bid .bid-amt b{display:block;color:var(--gold);font-size:1.05rem}
+.bid .bid-amt span{font-size:.72rem;color:var(--sub)}
+.bid .bid-acts{display:flex;gap:8px;flex-shrink:0}
+.applicant{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:12px}
+.applicant+.applicant{margin-top:8px}
+.applicant .ava2{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#5a4a86,#2e2547);display:grid;place-items:center;font-weight:800;color:var(--gold2);flex:0 0 auto;font-size:.95rem}
+.applicant .ap-b{flex:1 1 auto;min-width:0}
+.applicant .ap-t{font-weight:700;font-size:.9rem}
+.applicant .ap-s{font-size:.76rem;color:var(--sub);margin-top:2px}
+.applicant .ap-acts{display:flex;gap:6px;flex-shrink:0}
+.team-roster{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.team-slot{width:56px;height:56px;border-radius:13px;border:1px dashed var(--line2);display:grid;place-items:center;font-size:1.3rem;color:var(--sub);position:relative}
+.team-slot.filled{background:rgba(232,200,106,.09);border-style:solid;border-color:var(--line)}
+.team-slot b{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-size:.66rem;color:var(--sub);background:#100f1c;padding:0 5px;border-radius:8px;border:1px solid var(--line);white-space:nowrap}
+
+/* ============ 数据看板 ============ */
+.dash{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.dash .card{padding:18px 20px}
+.dash .d-label{font-size:.78rem;color:var(--sub);letter-spacing:.05em}
+.dash .d-val{font-size:1.9rem;font-weight:900;margin:4px 0;font-variant-numeric:tabular-nums}
+.dash .d-delta{font-size:.74rem;color:var(--sub)}
+.dash .d-delta.up{color:#5fd0a0}
+.dash .d-delta.down{color:#ff8a7a}
+.chart{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px 22px;margin-bottom:18px}
+.chart h4{font-size:.95rem;margin-bottom:4px}
+.chart .c-sub{font-size:.78rem;color:var(--sub);margin-bottom:14px}
+.bar-chart{display:grid;gap:11px}
+.bar-row{display:grid;grid-template-columns:74px 1fr 74px;gap:12px;align-items:center;font-size:.82rem}
+.bar-row .b-label{color:var(--sub);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{height:20px;background:rgba(0,0,0,.3);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+.bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--gold),#f4e2a8);transition:width 1.1s cubic-bezier(.22,.8,.3,1);width:0}
+.bar-row .b-val{color:var(--gold2);font-weight:700;font-variant-numeric:tabular-nums}
+.donut-wrap{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+.donut{flex:0 0 auto;width:150px;height:150px;border-radius:50%;position:relative}
+.donut::after{content:"";position:absolute;inset:26px;background:#100f1c;border-radius:50%}
+.donut b{position:absolute;inset:0;display:grid;place-items:center;font-size:1.25rem;z-index:2}
+.donut-legend{flex:1 1 220px;display:grid;gap:9px}
+.donut-legend div{display:flex;align-items:center;gap:9px;font-size:.84rem;color:var(--sub)}
+.donut-legend i{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+.donut-legend b{margin-left:auto;color:var(--txt);font-variant-numeric:tabular-nums}
+.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:18px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}.dash{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  .ad-grid{grid-template-columns:repeat(2,1fr)}
+  .frow,.frow.three{grid-template-columns:1fr}
+  .qm{flex-wrap:wrap}
+  .qm .acts{width:100%}
+}
+@media(max-width:680px){
+  .ad-grid{grid-template-columns:1fr 1fr}
+  .ad-head .sub{width:100%}
+  .admin-bar{padding:11px 16px;gap:10px}
+  .admin-bar .ab-t{font-size:.85rem}
+}
+/* ============ 弹窗 ============ */
+.mask{position:fixed;inset:0;background:rgba(5,4,12,.78);backdrop-filter:blur(6px);z-index:80;display:none;place-items:center;padding:24px}
+.mask.show{display:grid}
+.modal{background:linear-gradient(165deg,#1c1834,#110d24);border:1px solid var(--line);border-radius:20px;padding:34px;max-width:470px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.6);max-height:92vh;overflow:auto}
+.modal h3{font-size:1.35rem;margin-bottom:6px}
+.modal .sub{color:var(--sub);font-size:.86rem;margin-bottom:22px}
+.modal .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.09);font-size:.9rem}
+.modal .row b{color:var(--gold2);font-weight:700}
+.modal .btns{display:flex;gap:12px;margin-top:26px}
+.modal .btns .btn{flex:1;justify-content:center}
+.toast{
+  position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);z-index:99;padding:14px 26px;border-radius:30px;
+  background:linear-gradient(135deg,#f4e2a8,#d8aa3c);color:#241d40;font-weight:700;font-size:.95rem;
+  box-shadow:0 14px 40px rgba(232,200,106,.4);opacity:0;transition:.35s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ============ 页脚 ============ */
+.foot{position:relative;z-index:2;border-top:1px solid var(--line);padding:50px 24px 30px;text-align:center;color:var(--sub);font-size:.86rem}
+.foot .logo{justify-content:center;margin-bottom:14px}
+.foot-links{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin:18px 0}
+.foot-links a{color:#b7add4}
+.foot-links a:hover{color:var(--gold)}
+
+/* ============ 响应式 ============ */
+@media(max-width:900px){
+  .quests{grid-template-columns:repeat(2,1fr)}
+  .grid-3,.grid-2,.split{grid-template-columns:1fr}
+  .split{gap:34px}.stat-grid{grid-template-columns:repeat(2,1fr);gap:34px}
+  .act{grid-template-columns:1fr;gap:12px;text-align:center;padding:20px}
+  .act-date{border-right:none;border-bottom:1px solid rgba(255,255,255,.1);padding:0 0 12px}
+  .act-state{justify-self:center}
+  .profile{grid-template-columns:1fr}
+  .auth-wrap{grid-template-columns:1fr}
+  .auth-banner{display:none}
+}
+@media(max-width:680px){
+  .nav{padding:12px 20px}
+  .nav-links{position:fixed;inset:60px 0 auto;flex-direction:column;background:rgba(12,9,26,.97);backdrop-filter:blur(14px);padding:24px;gap:16px;transform:translateY(-150%);transition:.35s;border-bottom:1px solid var(--line)}
+  .nav-links.open{transform:translateY(0)}
+  .menu-btn{display:block}
+  .quests{grid-template-columns:1fr}
+  .section{padding:70px 18px}
+  .field-row{grid-template-columns:1fr}
+  .kv{grid-template-columns:1fr}
+  .h2{font-size:1.9rem}
+  .hero-stats{gap:26px}
+  .auth-form{padding:32px 24px}
+}
+/* ================= 移动端 / App 适配 ================= */
+@media (max-width:820px){
+  :root{
+    --content-pad:16px; --card-radius:14px; --hero-h:auto;
+    --fs-h1:27px; --fs-h2:20px; --fs-body:14px;
+  }
+  html,body{overflow-x:hidden}
+  body{
+    padding-top:56px;                   /* 顶部固定栏占位 */
+    padding-bottom:64px;                /* 底部标签栏占位 */
+    -webkit-tap-highlight-color:transparent;
+    font-size:var(--fs-body);
+  }
+  .guild-topbar{
+    position:fixed; top:0; left:0; right:0; z-index:60;
+    height:56px; padding:0 var(--content-pad); gap:10px;
+    background:rgba(10,14,26,.94); backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(255,215,138,.14);
+  }
+  .guild-topbar .logo-text{display:none}
+  .guild-topbar .logo-mark{width:34px;height:34px;font-size:16px}
+  .guild-nav{display:none}              /* 桌面导航让位给底部标签栏 */
+  .guild-actions{gap:6px}
+  .guild-btn{padding:9px 14px;font-size:13px;white-space:nowrap}
+  .guild-btn-lg{padding:13px 18px;font-size:15px;width:100%}
+  /* 桌面 hover 效果在触屏上关闭，避免点击后卡住 */
+  *:hover{box-shadow:inherit}
+  .hero{
+    min-height:auto; padding:74px var(--content-pad) 44px;
+    text-align:center;
+  }
+  .hero-title{font-size:var(--fs-h1);line-height:1.25}
+  .hero-sub{font-size:14px;max-width:100%}
+  .hero-actions{flex-direction:column;width:100%;align-items:center}
+  .hero-actions .guild-btn{min-width:220px}
+  .hero-stats{flex-wrap:wrap;gap:14px;justify-content:center;margin-top:26px}
+  .section{padding:34px var(--content-pad)}
+  .section-title{font-size:var(--fs-h2)}
+  .filters{flex-wrap:wrap;gap:7px}
+  .filter-btn{padding:7px 12px;font-size:12.5px}
+  .quests-grid{grid-template-columns:1fr;gap:14px}
+  .quest-card{padding:16px}
+  .quest-card .qc-title{font-size:15.5px}
+  .quest-meta{font-size:12px;gap:6px}
+  .quest-tags{gap:5px}
+  .tag{padding:3px 8px;font-size:11px}
+  *:hover{box-shadow:inherit}
+  .activities-grid{grid-template-columns:1fr;gap:14px}
+  .activity-card{padding:16px}
+  .about-grid{grid-template-columns:1fr;gap:14px}
+  .about-card{padding:18px 16px}
+  .guild-footer .footer-cols{grid-template-columns:1fr;gap:18px}
+  .guild-footer .col h4{margin-bottom:8px}
+  /* 后台 */
+  .admin-bar{flex-wrap:wrap;gap:6px}
+  .admin-tab{padding:8px 11px;font-size:12.5px}
+  .data-cards{grid-template-columns:repeat(2,1fr);gap:11px}
+  .data-card{padding:14px}
+  .data-card .dc-value{font-size:21px}
+  .quests-table-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .quests-table{min-width:720px;font-size:12.5px}
+  .quests-table th,.quests-table td{padding:9px 8px}
+  /* 档案 */
+  .profile-wrap{grid-template-columns:1fr;gap:16px}
+  .profile-avatar-card{padding:20px 16px;text-align:center}
+  .profile-avatar{width:84px;height:84px;font-size:32px;margin:0 auto 10px}
+  .achievements{grid-template-columns:repeat(4,1fr);gap:8px}
+  .achv{padding:9px 4px}
+  .achv .achv-name{font-size:10.5px}
+  .record-list li{padding:11px 0;font-size:13px}
+  /* 弹窗：全屏抽屉化 */
+  .guild-modal{width:100%;height:100%;max-width:none;max-height:none;border-radius:0;padding:0}
+  .guild-modal .modal-head{
+    position:sticky;top:0;z-index:5;padding:16px;display:flex;align-items:center;gap:10px;
+    background:rgba(10,14,26,.97);border-bottom:1px solid rgba(255,215,138,.16);
+  }
+  .guild-modal .modal-head h3{font-size:17px;margin:0}
+  .guild-modal .modal-body{padding:18px 16px 40px;max-height:none;overflow:visible}
+  .guild-modal .modal-close{
+    position:static;width:32px;height:32px;font-size:19px;
+    border:1px solid rgba(255,215,138,.3);border-radius:50%;
+  }
+  .guild-modal .modal-foot{
+    position:sticky;bottom:0;padding:12px 16px;gap:10px;flex-direction:column;
+    background:rgba(10,14,26,.97);border-top:1px solid rgba(255,215,138,.16);
+  }
+  .guild-modal .modal-foot .guild-btn{flex:1;width:100%}
+  .form-row{grid-template-columns:1fr;gap:13px}
+  .form-row.two-col{grid-template-columns:1fr}
+  .form-group label{font-size:13px}
+  .guild-input,.guild-select,.guild-textarea{
+    padding:12px 13px;font-size:15px;border-radius:11px;  /* iOS 最小可点区 44×44 */
+  }
+  /* 详情页 */
+  .detail-actions{flex-direction:column;gap:9px}
+  .detail-actions .guild-btn{width:100%}
+  .detail-meta{grid-template-columns:repeat(2,1fr);gap:10px}
+  .dm-item{padding:11px}
+  .dm-item .dm-value{font-size:17px}
+  /* 信箱 */
+  .mail-layout{grid-template-columns:1fr;height:auto;max-height:none}
+  .mail-list{border-right:none;border-bottom:1px solid rgba(255,215,138,.14);max-height:38vh;overflow:auto}
+  .mail-letter{padding:20px 16px 40px}
+  .mail-item{padding:12px}
+  /* 数据看板图表 */
+  .chart-bars{gap:5px}
+  .chart-bar .bar-h{width:24px}
+  .chart-bar span{font-size:9.5px}
+  .trend-chart{gap:4px}
+  .trend-col .bar-h{width:22px}
+  .heatmap{grid-template-columns:repeat(14,1fr);gap:3px}
+  .audit-filters{flex-wrap:wrap;gap:7px}
+  /* 托ast */
+  .guild-toast{
+    left:14px;right:14px;bottom:74px;max-width:none;
+    padding:12px 14px;font-size:13.5px;text-align:center;
+  }
+  /* 升级条 */
+  .guild-update-bar{
+    left:10px;right:10px;bottom:74px;flex-direction:column;gap:8px;text-align:center;
+  }
+  .guild-update-bar .guild-btn,.guild-update-bar .guild-btn-ghost{width:100%}
+  /* 桌面 hover 效果在触屏上关闭，避免点击后卡住 */
+  *:hover{box-shadow:inherit}
+}
+@media (max-width:400px){
+  :root{--fs-h1:23px;--fs-h2:18px}
+  .hero-stats{gap:10px}
+  .data-cards{grid-template-columns:1fr}
+  .achievements{grid-template-columns:repeat(3,1fr)}
+  .detail-meta{grid-template-columns:1fr}
+}
+/* 深链接高亮 */
+@keyframes dlFlash{0%{box-shadow:0 0 0 3px rgba(255,215,138,.9)}60%{box-shadow:0 0 0 3px rgba(255,215,138,.15)}100%{box-shadow:none}}
+.deep-link-flash{animation:dlFlash 1.6s ease}
+</style>
+<link rel="stylesheet" href="mobile.css">
+<script src="native-bridge.js"></script>
+<script src="app.js"></script>
+<script src="mobile.js"></script>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- ============ App 移动端壳（桌面端自动隐藏） ============ -->
+<div class="guild-pull-hint" id="pullHint"><span class="spinner"></span><span>下拉刷新委托板</span></div>
+
+<div class="guild-tabbar" id="tabbar">
+  <button data-tab="tasks" class="on" aria-label="委托任务"><span class="tb-ic">📜</span>委托</button>
+  <button data-tab="activities" aria-label="近期活动"><span class="tb-ic">🎪</span>活动</button>
+  <button data-tab="profile" aria-label="我的档案"><span class="tb-ic">🏅</span>档案</button>
+  <button data-tab="mail" aria-label="公会信箱"><span class="tb-ic">✉️</span>信箱<span class="tb-badge" id="tbMailBadge" hidden>0</span></button>
+  <button data-tab="admin" aria-label="执事厅"><span class="tb-ic">⚙️</span>执事厅<span class="tb-badge" id="tbAdminBadge" hidden>0</span></button>
+</div>
+
+<div class="guild-install-bar" id="installBar" hidden>
+  <div class="ib-ic">🌙</div>
+  <div class="ib-tx"><b>添加到主屏幕</b><span>像原生 App 一样使用公会</span></div>
+  <div class="ib-act"><button class="guild-btn guild-btn-sm" id="installBtn">安装</button></div>
+</div>
+<a class="guild-install-help" href="install-guide.html" target="_blank" rel="noopener" id="installHelp" hidden>📱 手机端安装指引</a>
+
+<div class="guild-gesture-tip" id="gestureTip" hidden>
+  <div class="gt-card">
+    <div class="gt-ic">👆</div>
+    <b>滑动切换板块</b>
+    <p>底部标签栏可快速跳转<br>下拉首页可刷新委托板<br>详情页右滑返回</p>
+    <button class="guild-btn guild-btn-sm" id="gestureGotIt">知道了</button>
+  </div>
+</div>
+<!-- =================================================== -->
+
+<div class="guild-viewport-warn">💡 当前窗口较窄，部分后台表格会横向滑动查看；真机 App 体验更佳。</div>
+
+<!-- ============ 导航 ============ -->
+<nav class="nav" id="nav">
+  <div class="logo"><span class="sigil">月</span><span>银月冒险家协会</span></div>
+  <div class="nav-links" id="navLinks">
+    <a href="#quests">委托任务板</a>
+    <a href="#activities">近期活动</a>
+    <a href="#about">关于公会</a>
+    <a href="#profile" id="navProfile">我的档案</a>
+    <a href="javascript:;" id="navMail" style="position:relative">公会信箱<span class="badge" id="mailBadge" style="display:none">0</span></a>
+    <a href="javascript:;" id="navNotif" style="position:relative">消息<span class="badge" id="notifBadge" style="display:none">0</span><span id="notifDot"></span></a>
+    <a href="#join" class="btn-nav" id="navCta">登录 / 登记</a>
+    <button class="btn-nav" id="navAdmin" style="display:none;border:none;cursor:pointer">管理后台</button>
+    <span class="net-dot" id="netDot" title="通讯状态"></span>
+  </div>
+  <button class="menu-btn" id="menuBtn">☰</button>
+</nav>
+
+<!-- ============ Hero ============ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge"><span class="dot"></span>公会大厅 · 当前开放接取委托 12 件</div>
+    <h1>以勇气为刃<br>以契约立名</h1>
+    <p>银月冒险家协会是这片大陆最古老的委托中介组织。从屠龙级讨伐到边境采药，每一次出征都被记录在册——你的传说，从这里开始书写。</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="scrollToQuests()">查看委托任务板 →</button>
+      <a href="#join" class="btn btn-ghost">登记为冒险者</a>
+    </div>
+    <div class="hero-stats">
+      <div><b id="h1">0</b><span>注册冒险者</span></div>
+      <div><b id="h2">0</b><span>已完成委托</span></div>
+      <div><b id="h3">0</b><span>合作城邦</span></div>
+      <div><b id="h4">0</b><span>累计金币报酬</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 数据条 ============ -->
+<section class="section stats"><div class="container">
+  <div class="stat-grid">
+    <div><b id="s1">0</b><span>注册冒险者</span></div>
+    <div><b id="s2">0</b><span>本年度完成委托</span></div>
+    <div><b id="s3">0</b><span>合作城邦与据点</span></div>
+    <div><b id="s4">0</b><span>累计发放金币报酬</span></div>
+  </div>
+</div></section>
+
+<!-- ============ 委托任务板 ============ -->
+<section class="section" id="quests">
+  <div class="container">
+    <div class="eyebrow">Quest Board</div>
+    <div class="h2">委托任务板 · <em>今日更新 9 件</em></div>
+    <p class="lead">所有委托均经公会核实并承保。点击「承接」即视为接受契约条款，报酬于交付核验后结算。</p>
+
+    <div class="toolbar">
+      <span class="chip on" data-f="all">全部</span>
+      <span class="chip" data-f="S">S 级</span>
+      <span class="chip" data-f="A">A 级</span>
+      <span class="chip" data-f="B">B 级</span>
+      <span class="chip" data-f="C">C 级</span>
+      <span class="chip" data-f="open">可接取</span>
+      <div class="spacer"></div>
+      <input class="search" id="qSearch" placeholder="搜索委托名称 / 关键词…">
+    </div>
+
+    <div class="quests" id="questsBox"></div>
+  </div>
+</section>
+
+<!-- ============ 近期活动 ============ -->
+<section class="section bg-alt" id="activities">
+  <div class="container">
+    <div class="eyebrow">Events</div>
+    <div class="h2">近期活动 · <em>组队集结中</em></div>
+    <p class="lead">公会定期组织的集体行动与竞技赛事，完成可获额外声望与限定徽章。</p>
+    <div class="activities" id="actsBox" style="margin-top:34px"></div>
+  </div>
+</section>
+
+<!-- ============ 关于公会 ============ -->
+<section class="section" id="about">
+  <div class="container split">
+    <div>
+      <div class="eyebrow">About The Guild</div>
+      <div class="h2">不只是接任务的<br><em>冒险者之家</em></div>
+      <p class="lead">自大陆历 317 年建会以来，我们始终站在委托方与冒险者之间，用契约与担保让每一次出征都有凭可依。</p>
+      <ul class="about-list">
+        <li>公会承保所有登记委托，报酬先行托管，杜绝赖账</li>
+        <li>四级难度分级（S / A / B / C）与对应的声望与福利体系</li>
+        <li>免费组队匹配、装备寄售与负伤后的治疗支援</li>
+        <li>成员专属休息厅、训练场、炼金工坊与图书馆</li>
+      </ul>
+    </div>
+    <div class="grid grid-2">
+      <div class="card"><span class="icon">⚔️</span><h3>承接委托</h3><p>从讨伐、护送到采集、调查，覆盖全部委托类型，按等级匹配适合的冒险者。</p></div>
+      <div class="card"><span class="icon">🛡️</span><h3>组队匹配</h3><p>发布队伍需求或加入他人小队，系统按职业与等级自动推荐合适搭档。</p></div>
+      <div class="card"><span class="icon">📈</span><h3>成长体系</h3><p>完成任务积累经验与声望，提升公会等级，解锁高阶委托与专属特权。</p></div>
+      <div class="card"><span class="icon">🏰</span><h3>公会设施</h3><p>休息厅、训练场、炼金工坊、装备寄售行与任务档案馆一应俱全。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 冒险者档案 ============ -->
+<section class="section" id="profile" style="display:none">
+  <div class="container">
+    <div class="eyebrow">Adventurer Profile</div>
+    <div class="h2" style="margin-bottom:8px">我的冒险者档案</div>
+    <p class="lead" id="profileLead">登录后即可查看你的等级、声望进度、成就墙与委托记录。</p>
+    <div class="profile" id="profileBox" style="margin-top:34px"></div>
+  </div>
+</section>
+
+<!-- ============ 登录 / 登记 ============ -->
+<section class="section" id="join">
+  <div class="container">
+    <div class="auth-wrap">
+      <div class="auth-form">
+        <div class="tabs">
+          <div class="tab on" data-tab="login">登录</div>
+          <div class="tab" data-tab="reg">登记为冒险者</div>
+        </div>
+        <form id="authForm" novalidate>
+          <div id="regOnly" style="display:none">
+            <div class="field-row">
+              <div class="field"><label>冒险者代号</label><input id="fName" placeholder="如：银刃·艾兰"></div>
+              <div class="field"><label>职业</label>
+                <select id="fClass"><option value="">选择职业</option><option>战士</option><option>法师</option><option>游侠</option><option>牧师</option><option>刺客</option><option>术士</option><option>德鲁伊</option></select>
+              </div>
+            </div>
+          </div>
+          <div class="field"><label id="lblAccount">公会登记号 / 联络邮箱</label><input id="fAccount" placeholder="登记号或邮箱，如 alane@silvermoon.guild"></div>
+          <div class="field" id="passField">
+            <label id="lblPass">口令密码</label><input id="fPass" type="password" placeholder="至少 6 位">
+            <div class="pw-meta"><span id="pwStrengthTxt"></span><a href="javascript:;" id="forgotLink">忘记口令？</a></div>
+            <div class="strength" id="pwStrength"><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="field" id="codeField" style="display:none">
+            <label>邮箱验证码 <span style="color:var(--gold)">*</span></label>
+            <div class="vcode-wrap">
+              <input id="fCode" maxlength="6" placeholder="6 位数字，演示环境填入 884920">
+              <button type="button" class="vcode-btn" id="sendCode">发送验证码</button>
+            </div>
+            <div class="hint">验证码 15 分钟内有效，仅限本次操作使用；演示版本统一为 <b style="color:var(--gold2)">884920</b>。</div>
+          </div>
+          <div id="regMore" style="display:none">
+            <div class="field-row">
+              <div class="field"><label>联络邮箱 <span style="color:var(--gold)">*</span></label><input id="fEmail" type="email" placeholder="用于接收验证码与委托通知"></div>
+              <div class="field"><label>等级</label><input id="fLv" type="number" min="1" max="99" placeholder="1"></div>
+              <div class="field"><label>所属城邦</label><input id="fCity" placeholder="如：奥古斯都"></div>
+            </div>
+            <div class="field"><label>专长（可选）</label><input id="fSpec" placeholder="如：龙语通识、草药学、开锁"></div>
+            <div class="field">
+              <label>设置口令密码 *</label>
+              <input id="fPassReg" type="password" placeholder="至少 6 位，建议含字母与数字">
+              <div class="pw-meta"><span id="pwStrengthTxt2"></span><span style="color:var(--sub)">用于登录与承接高等级委托</span></div>
+              <div class="strength" id="pwStrength2"><i></i><i></i><i></i><i></i></div>
+            </div>
+            <div class="field">
+              <label>邮箱验证码 *</label>
+              <div class="vcode-wrap">
+                <input id="fCodeReg" maxlength="6" placeholder="6 位数字">
+                <button type="button" class="vcode-btn" id="sendCodeReg">发送验证码</button>
+              </div>
+              <div class="hint">未收到？检查「公会信使」垃圾箱，或 60 秒后重新发送。</div>
+            </div>
+            <div class="check"><input type="checkbox" id="fAgree"><label for="fAgree">我已阅读并同意《银月冒险家协会章程》与《委托契约条款》，确认所填联络邮箱真实有效并同意用于委托通知与安全验证，理解高风险委托可能带来的伤亡风险。</label></div>
+          </div>
+          <div class="err" id="errBox"></div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" id="submitBtn">登录公会大厅</button>
+          <p class="hint" id="switchHint" style="margin-top:16px;text-align:center"></p>
+        </form>
+      </div>
+      <aside class="auth-banner">
+        <h3>成为注册冒险者的权益</h3>
+        <ul>
+          <li>承接 S～C 级全部委托并累积声望</li>
+          <li>个人档案、等级进度与成就墙永久保存</li>
+          <li>公会设施免费使用：休息厅、训练场、炼金工坊</li>
+          <li>委托报酬由公会先行托管，交付即结算</li>
+          <li>负伤或失踪可申请公会救援与抚恤</li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 页脚 ============ -->
+<footer class="foot">
+  <div class="logo"><span class="sigil">月</span><span>银月冒险家协会</span></div>
+  <div class="foot-links">
+    <a href="#quests">委托任务板</a>
+    <a href="#activities">近期活动</a>
+    <a href="#about">关于公会</a>
+    <a href="#join">登记为冒险者</a>
+  </div>
+  <p>Silver Moon Adventurers Guild · 大陆历 742 年注册 · 本网站为演示版本，数据与接口均可替换为真实后端</p>
+</footer>
+
+<div class="mask" id="mask"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+<div class="net-bar" id="netBar">通讯中断：当前为离线模式，已缓存的操作将在恢复连接后自动同步</div>
+
+<!-- ============ 公会信箱 ============ -->
+<div class="mask" id="mailMask"><div class="mail-panel" id="mailPanel">
+  <div class="mp-head">
+    <div>
+      <div class="mp-title">公会信箱</div>
+      <div class="mp-sub" id="mailSub">往来信函与委托文书在此留存</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="markAllRead()">全部标为已读</button>
+      <button class="mp-close" onclick="closeMail()">×</button>
+    </div>
+  </div>
+  <div class="mp-list" id="mailList"></div>
+  <div class="mp-empty" id="mailEmpty" style="display:none">
+    <div class="mp-empty-ic">✉</div>
+    <div>信箱空空如也</div>
+    <div style="font-size:.82rem;margin-top:6px">承接委托、报名活动、系统通告都会以信函送达</div>
+  </div>
+  <div class="mp-read" id="mailRead" style="display:none">
+    <button class="btn btn-ghost btn-sm" onclick="backToList()">‹ 返回信函列表</button>
+    <div class="mr-head">
+      <div class="mr-tag" id="mrTag"></div>
+      <h3 class="mr-title" id="mrTitle"></h3>
+      <div class="mr-meta" id="mrMeta"></div>
+    </div>
+    <iframe class="mr-body" id="mailFrame"></iframe>
+    <div class="mr-acts" id="mrActs"></div>
+  </div>
+</div></div>
+
+<!-- ============ 委托审核弹窗 ============ -->
+<div class="mask" id="rvMask"><div class="modal" id="rvModal"></div></div>
+
+<!-- ============ 管理员快捷入口（演示用） ============ -->
+<button class="ad-shortcut" id="adShortcut" title="管理员入口">⚙️</button>
+<div class="admin-bar" id="adminBar">
+  <div class="ab-l"><span class="sigil">印</span>
+    <div class="ab-t">公会执事厅<small>GUILD MASTER CONSOLE</small></div>
+  </div>
+  <div class="ab-r">
+    <span class="who">执事：<b id="abWho">—</b> · 权限 <b id="abRole">—</b></span>
+    <button class="btn btn-ghost btn-sm" id="abLogout">退出执事模式</button>
+  </div>
+</div>
+
+<!-- ============ 管理后台 ============ -->
+<div class="ad-overlay" id="adOverlay">
+  <div class="ad-shell">
+    <div class="ad-head">
+      <div><div class="eyebrow">Master Console</div><h2>公会执事厅</h2><div class="sub">发布委托、管理活动与冒险者档案，所有操作实时同步至公会对外的任务板。</div></div>
+      <div class="ad-tabs">
+        <button class="ad-tab on" data-m="issue">📜 发布委托<span class="n" id="nIssue">NEW</span></button>
+        <button class="ad-tab" data-m="quests">🗂 委托管理<span class="n" id="nQuests"></span></button>
+        <button class="ad-tab" data-m="acts">🎪 活动管理<span class="n" id="nActs"></span></button>
+        <button class="ad-tab" data-m="advs">🧙 冒险者<span class="n" id="nAdvs"></span></button>
+        <button class="ad-tab" data-m="review">🔍 审核队列<span class="n" id="nReview"></span></button>
+        <button class="ad-tab" data-m="bids">⚔️ 竞标与组队<span class="n" id="nBids"></span></button>
+        <button class="ad-tab" data-m="dash">📊 数据看板</button>
+        <button class="ad-tab" data-m="audit">📜 操作审计<span class="n" id="nAudit"></span></button>
+      </div>
+    </div>
+
+    <div class="ad-grid" id="adStats"></div>
+
+    <!-- 发布委托 -->
+    <div class="mtab" data-mtab="issue">
+      <h3>起草新委托</h3>
+      <div class="desc">带 <b style="color:var(--gold)">*</b> 为必填项。草稿不会出现在公会对外的任务板上，提交发布后即刻生效。</div>
+      <form id="issueForm" novalidate>
+        <div class="frow" style="margin-bottom:14px">
+          <div class="field"><label>委托等级 *</label>
+            <select id="iRank"><option value="">选择等级</option><option>S 级 · 国家级威胁</option><option>A 级 · 高难度</option><option>B 级 · 中等</option><option>C 级 · 新手友好</option></select></div>
+          <div class="field"><label>委托标题 *</label><input id="iTitle" placeholder="如：讨伐苍穹脊背的成年红龙"></div>
+        </div>
+        <div class="field" style="margin-bottom:14px"><label>委托详情 *</label><textarea id="iDesc" placeholder="说明目标、地点、风险、支援条件与交付凭证……"></textarea></div>
+        <div class="frow" style="margin-bottom:14px">
+          <div class="field"><label>难度</label><select id="iDiff"><option>简单</option><option>中等</option><option>较难</option><option>极难</option></select></div>
+          <div class="field"><label>预计耗时</label><input id="iTime" placeholder="如：3-5 天"></div>
+        </div>
+        <div class="frow three" style="margin-bottom:14px">
+          <div class="field"><label>建议人数</label><input id="iPeople" placeholder="如：2-4 人"></div>
+          <div class="field"><label>报酬（金币）*</label><input id="iGold" type="number" min="0" placeholder="480000"></div>
+          <div class="field"><label>标签（点击选择，可多选）</label>
+            <div class="tag-pick" id="iTags">
+              <span>讨伐</span><span>护送</span><span>调查</span><span>采集</span><span>清剿</span><span>回收</span><span>遗迹</span><span>解谜</span><span>高危</span><span>组队限定</span><span>新手友好</span><span>龙类</span>
+            </div>
+          </div>
+        </div>
+        <div class="check" style="margin-bottom:22px">
+          <input type="checkbox" id="iOpen" checked><label for="iOpen">发布后立即开放承接（取消勾选则存为草稿，仅在执事厅可见）</label>
+        </div>
+        <div class="err" id="issueErr"></div>
+        <div class="modal-btns" style="display:flex;gap:12px;justify-content:flex-end">
+          <button type="button" class="btn btn-ghost" id="iDraft">存为草稿</button>
+          <button type="submit" class="btn btn-primary">🔏 加盖公会印鉴，正式发布</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 委托管理 -->
+    <div class="mtab" data-mtab="quests" style="display:none">
+      <h3>委托管理</h3>
+      <div class="desc">拖动开关可即时开放或关闭承接；编辑与删除操作需二次确认。</div>
+      <div class="qmanage" id="qManage"></div>
+    </div>
+
+    <!-- 活动管理 -->
+    <div class="mtab" data-mtab="acts" style="display:none">
+      <h3>活动管理</h3>
+      <div class="desc">状态说明：<span class="mini open">招募中</span> 可报名 · <span class="mini soon">即将开启</span> 展示但不可报名 · <span class="mini full">名额已满</span> 停止报名。</div>
+      <table class="mtable">
+        <thead><tr><th style="width:88px">日期</th><th>活动</th><th style="width:190px">状态</th><th style="width:150px">操作</th></tr></thead>
+        <tbody id="aManage"></tbody>
+      </table>
+    </div>
+
+    <!-- 冒险者 -->
+    <div class="mtab" data-mtab="advs" style="display:none">
+      <h3>冒险者名录</h3>
+      <div class="desc">登记在册的冒险者档案。可调整声望与等级，或暂时冻结其承接委托的资格。</div>
+      <table class="mtable">
+        <thead><tr><th>代号</th><th>职业 / 等级</th><th>声望</th><th>委托数</th><th>状态</th><th style="width:150px">操作</th></tr></thead>
+        <tbody id="adManage"></tbody>
+      </table>
+    </div>
+
+    <!-- 审核队列 -->
+    <div class="mtab" data-mtab="review" style="display:none">
+      <h3>委托审核队列</h3>
+      <div class="desc">冒险者自行提交的委托需经执事厅复核后方可上架。退回的委托将以信函通知提交人。</div>
+      <div class="rv-list" id="rvList"></div>
+      <h3 style="margin-top:26px">已处理记录</h3>
+      <div class="rv-list" id="rvLog" style="max-height:none"></div>
+    </div>
+
+    <!-- 竞标与组队 -->
+    <div class="mtab" data-mtab="bids" style="display:none">
+      <div class="bid-bar">
+        <div class="frow three" style="margin:0">
+          <div class="field" style="margin:0"><label>筛选委托</label>
+            <select id="bidQFilter"><option value="">全部竞标委托</option></select></div>
+          <div class="field" style="margin:0"><label>状态</label>
+            <select id="bidState"><option value="">全部</option><option value="pending">竞标中</option><option value="won">已中标</option><option value="lost">未中标</option></select></div>
+        </div>
+        <div class="chip-sm"><i></i><span id="bidStatTxt">共 0 份竞标</span></div>
+      </div>
+      <div id="bidPanel"></div>
+      <h3 style="margin-top:26px">组队申请</h3>
+      <div class="desc">冒险者自发组建小队，队长审核成员资质后成团，成团即获得「协作系数」加成。</div>
+      <div id="teamPanel"></div>
+    </div>
+
+    <!-- 数据看板 -->
+    <div class="mtab" data-mtab="dash" style="display:none">
+      <div class="dash" id="dashCards"></div>
+      <div class="grid2">
+        <div class="chart"><h4>委托完成率</h4><div class="c-sub" id="dashRateSub"></div><div class="bar-chart" id="dashRate"></div></div>
+        <div class="chart"><h4>声望分布</h4><div class="c-sub">在册冒险者按声望段位划分</div>
+          <div class="donut-wrap">
+            <div class="donut" id="dashDonut"></div>
+            <div class="donut-legend" id="dashDonutLegend"></div>
+          </div></div>
+      </div>
+      <div class="chart"><h4>热门委托标签</h4><div class="c-sub">按承接次数统计，TOP 8</div><div class="bar-chart" id="dashTags"></div></div>
+      <div class="chart"><h4>近七日承接与结算趋势</h4><div class="c-sub">柱状为承接件数，金色标记为已结算件数</div><div class="bar-chart" id="dashTrend"></div></div>
+    </div>
+
+    <!-- 操作审计 -->
+    <div class="mtab" data-mtab="audit" style="display:none">
+      <div class="ad-grid" id="auditCards" style="margin-bottom:20px"></div>
+      <div class="frow three" style="margin-bottom:16px">
+        <div class="field" style="margin:0"><label>操作者</label><input id="afWho" placeholder="全部操作者"></div>
+        <div class="field" style="margin:0"><label>动作类型</label>
+          <select id="afAct"><option value="">全部动作</option><option>登录</option><option>承接委托</option><option>发布委托</option><option>上下架</option><option>审核</option><option>冻结资格</option><option>授予声望</option><option>结算</option><option>互评</option><option>发送邮件</option></select></div>
+        <div class="field" style="margin:0"><label>时间范围</label>
+          <select id="afRange"><option value="7">近 7 天</option><option value="30">近 30 天</option><option value="0">全部</option></select></div>
+      </div>
+      <div style="overflow-x:auto"><table class="mtable" id="auditTable"></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 交付结算弹窗 ============ -->
+<div class="mask" id="dlMask"><div class="modal" id="dlModal"></div></div>
+
+<!-- ============ 消息通知中心 ============ -->
+<div class="mask" id="notifMask"><div class="notif-panel" id="notifPanel">
+  <div class="mp-head">
+    <div>
+      <div class="mp-title">消息中心</div>
+      <div class="mp-sub" id="notifSub">站内即时消息 · 与公会信箱并行送达</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="markAllNotifRead()">全部标为已读</button>
+      <button class="mp-close" onclick="closeNotif()">×</button>
+    </div>
+  </div>
+  <div class="notif-tabs">
+    <div class="notif-tab on" data-nt="all">全部</div>
+    <div class="notif-tab" data-nt="quest">委托动态</div>
+    <div class="notif-tab" data-nt="team">组队与竞标</div>
+    <div class="notif-tab" data-nt="system">公会通告</div>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+</div></div>
+
+<script>
+/* ==================================================================
+   银月冒险家协会 · 前端（可接真实后端）
+   ------------------------------------------------------------------
+   API 约定（相对路径，与后端协商后可整体替换 BASE）：
+     GET  /api/quests             任务列表
+     GET  /api/activities         活动列表
+     GET  /api/stats              首页统计
+     POST /api/auth/register      登记
+     POST /api/auth/login         登录
+     GET  /api/profile            当前用户档案（需 token）
+     POST /api/quests/:id/accept  承接任务
+     POST /api/activities/:id/join 报名活动
+     POST /api/auth/request-code   请求邮件验证码（注册/找回）
+     POST /api/auth/verify-code    校验验证码
+     POST /api/auth/reset-password 重置密码
+     ---- 管理后台（需 Bearer + 执事权限）----
+     POST /api/admin/quests        发布委托
+     GET  /api/admin/quests        委托管理列表
+     PATCH /api/admin/quests/:id   上下架 / 编辑
+     DELETE /api/admin/quests/:id  删除
+     POST /api/quests              冒险者提交委托（需执事审核）
+     POST /api/quests/:id/review   审核结果 pass / reject
+     GET  /api/mail                公会信箱信函列表
+     PATCH /api/mail/:id/read      标记已读
+     GET  /api/admin/stats         后台数据概览
+     ---- 消息 / 竞标 / 结算 / 看板 / 审计 ----
+     GET  /api/notifications           站内消息列表 ?type=&read=
+     PATCH /api/notifications/:id/read 标记单条已读
+     PATCH /api/notifications/read-all 全部标为已读
+     GET  /api/quests/:id/bids        委托的竞标列表
+     POST /api/quests/:id/bid         提交竞标 {amount}
+     POST /api/bids/:id/award         执事定标 {bidId}
+     POST /api/teams                  创建队伍 {questId,name,need}
+     POST /api/teams/:id/join         申请入队
+     POST /api/teams/:id/approve      队长批准成员
+     POST /api/quests/:id/deliver     提交交付凭证 {proof}
+     POST /api/settlements/:id/rate   双向互评 {score,comment,anonymous}
+     GET  /api/dashboard              数据看板聚合
+     GET  /api/admin/audit            审计日志 ?who=&action=&since=
+   ================================================================== */
+const BASE = "";                       // 部署时改为 "https://your-api.com"
+const LS = localStorage;
+const token = () => LS.getItem("ag_token");
+const me = () => { try{return JSON.parse(LS.getItem("ag_me")||"null")}catch(e){return null} };
+
+/* ---------- 工具 ---------- */
+const $ = s=>document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+const fmt = n => n.toLocaleString("zh-CN");
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2400);}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function modal(html){$("#modal").innerHTML=html;$("#mask").classList.add("show");}
+$("#mask").addEventListener("click",e=>{if(e.target===$("#mask"))$("#mask").classList.remove("show");});
+
+/* ---------- 粒子背景 ---------- */
+(function(){
+  const cv=$("#particles"),ctx=cv.getContext("2d");let w,h,p=[];
+  const resize=()=>{w=cv.width=innerWidth;h=cv.height=innerHeight;
+    p=Array.from({length:Math.min(70,innerWidth/22)},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.8+.4,v:Math.random()*.25+.1,o:Math.random()*.5+.2}));};
+  resize();addEventListener("resize",resize);
+  (function frame(){ctx.clearRect(0,0,w,h);
+    p.forEach(d=>{d.y-=d.v;d.x+=Math.sin(d.y/90)*.25;if(d.y<-5)d.y=h+5;
+      ctx.beginPath();ctx.fillStyle=`rgba(232,200,106,${d.o})`;ctx.arc(d.x,d.y,d.r,0,7);ctx.fill();});
+    requestAnimationFrame(frame);})();
+})();
+
+/* ---------- 导航 ---------- */
+addEventListener("scroll",()=>$("#nav").classList.toggle("scrolled",scrollY>20));
+$("#menuBtn").onclick=()=>$("#navLinks").classList.toggle("open");
+function scrollToQuests(){$("#quests").scrollIntoView({behavior:"smooth"});}
+
+/* ==================================================================
+   1) 数据层：优先拉真实接口，失败则退回内嵌 mock
+   ================================================================== */
+const MOCK={
+  stats:{adventurers:12847,completed:96302,cities:64,gold:248900000},
+  quests:[
+    {id:1,rank:"S",title:"讨伐苍穹脊背的成年红龙",desc:"栖息于北境火山口的成年红龙「烬翼」已摧毁三座驿站，需由高阶小队完成讨伐，公会提供攻城器械支援。",diff:"极难",time:"7-10 天",people:"5-8 人",gold:480000,open:true,tags:["讨伐","龙类","高危"]},
+    {id:2,rank:"S",title:"封印古代地牢深处的腐化之源",desc:"旧王陵地下三层检测到腐化波动，需携带圣物进入并完成封印，仅限 A 级以上小队申请。",diff:"极难",time:"14 天",people:"6 人",gold:520000,open:false,tags:["封印","遗迹","组队限定"]},
+    {id:3,rank:"A",title:"护送商队穿越迷雾峡谷",desc:"霜落月至黑水城的商队遭遇劫匪与迷雾兽袭扰，需在七日内安全送达，全程约 320 里。",diff:"较难",time:"5-7 天",people:"3-5 人",gold:86000,open:true,tags:["护送","长途"]},
+    {id:4,rank:"A",title:"回收失落遗迹中的星象仪",desc:"南泽遗迹上层，星象仪保存完好但机关未明，需具备解除古代机关能力的冒险者同行。",diff:"较难",time:"3-4 天",people:"2-4 人",gold:64000,open:true,tags:["回收","遗迹","解谜"]},
+    {id:5,rank:"A",title:"清剿黑沼沼泽的巨蛙群",desc:"巨蛙群繁殖失控威胁沿岸村落，清除巢穴并带回蛙王之牙作为凭证。",diff:"中等",time:"2 天",people:"2-3 人",gold:38000,open:true,tags:["清剿","怪物"]},
+    {id:6,rank:"B",title:"调查边境村落的失踪事件",desc:"月见村近半月有七人失踪，疑似与林地深处的异样有关，需查明真相并给出处置建议。",diff:"中等",time:"2-3 天",people:"2-4 人",gold:18000,open:true,tags:["调查","悬疑"]},
+    {id:7,rank:"B",title:"猎取雪原冰狼的利爪",desc:"为铁炉城工匠公会收集二十枚冰狼利爪，冰狼群活动于北风隘口一带。",diff:"中等",time:"1-2 天",people:"1-3 人",gold:12000,open:true,tags:["采集","狩猎"]},
+    {id:8,rank:"C",title:"采集月光草与星露花",desc:"炼金工坊急需一批月光草与星露花，生于银月湖畔，无战斗风险，新手亦可接取。",diff:"简单",time:"半天",people:"1 人",gold:2400,open:true,tags:["采集","新手友好"]},
+    {id:9,rank:"C",title:"清理旧港栈桥的哥布林",desc:"旧港栈桥聚集十余只哥布林骚扰商船，驱逐即可，需保留目击凭证。",diff:"简单",time:"半天",people:"1-2 人",gold:3600,open:true,tags:["清剿","新手友好"]}
+  ],
+  adventurers:[
+    {id:1001,name:"银刃·艾兰",class:"战士",lv:74,xp:12840,records:[],frozen:false},
+    {id:1002,name:"星语·薇尔",class:"法师",lv:68,xp:9520,records:[],frozen:false},
+    {id:1003,name:"铁砧·博伦",class:"牧师",lv:61,xp:7300,records:[],frozen:false},
+    {id:1004,name:"夜枭·凯尔",class:"刺客",lv:82,xp:18600,records:[],frozen:true},
+    {id:1005,name:"苔原·莉安",class:"德鲁伊",lv:55,xp:5100,records:[],frozen:false},
+    {id:1006,name:"铸雷·多尔",class:"术士",lv:79,xp:16400,records:[],frozen:false}
+  ],
+  drafts:[],
+  bidQuests:[1,3],
+  pool:12000,
+  activities:[
+    {id:1,date:"10-28",title:"冬境讨伐团 · 苍穹脊背联合行动",desc:"公会组织 40 人规模联合讨伐，含补给线与撤退预案，参与者可获限定「屠龙者」徽章。",state:"open",cap:"招募中 32/40"},
+    {id:2,date:"11-05",title:"新人试炼周 · 一至十级专属副本",desc:"面向登记未满三个月的冒险者，全程由资深向导带队，完成即赠基础装备一套。",state:"open",cap:"招募中 18/30"},
+    {id:3,date:"11-12",title:"银月杯 · 小队竞速挑战赛",desc:"双人至四人小队限时通关竞速，按用时排名发放奖金与声望，冠军奖励 10 万金币。",state:"soon",cap:"即将开启报名"},
+    {id:4,date:"11-20",title:"古王陵深层探索 · 协作调查",desc:"联合三家公会进入古王陵第四层，共享情报与战利品，仅限 B 级以上。",state:"full",cap:"名额已满"}
+  ]
+};
+
+/* ---------- 联网层：缓存 / 队列 / 离线检测 / 失败原因解析 ---------- */
+const NET={online:navigator.onLine, backoff:1500, pending:[]};
+const TTL={"/api/stats":60000,"/api/quests":30000,"/api/activities":30000,"/api/admin/stats":30000,"/api/admin/quests":15000};
+const cache={}, inflight={};
+addEventListener("online",()=>{NET.online=true;$("#netBar").classList.remove("show");toast("已恢复与公会主城的通讯");flushQueue();});
+addEventListener("offline",()=>{NET.online=false;$("#netBar").classList.add("show");});
+function netErr(e){return e&&e.message==="Failed to fetch"?"无法连接公会服务器，当前为离线模式":(e&&e.status?`服务器返回错误码 ${e.status}`:"请求中断，已切换至离线数据");}
+
+async function api(path,opt={},{cacheKey=null,tags=null,queued=false}={}){
+  if(!BASE) throw 0;
+  if(!NET.online){if(queued)enqueue(path,opt);throw Object.assign(new Error("offline"),{offline:1});}
+  const ck=cacheKey||path, hit=cache[ck];
+  if(opt.method!=="GET"||!hit||Date.now()-hit.t>TTL[ck]){
+    if(opt.method==="GET"&&inflight[ck]) return inflight[ck];
+    const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),12000);
+    inflight[ck]=fetch(BASE+path,{headers:{"Content-Type":"application/json",...(token()?{Authorization:"Bearer "+token()}:{})},signal:ctrl.signal,...opt})
+      .then(r=>{clearTimeout(t);if(!r.ok)throw Object.assign(new Error("http "+r.status),{status:r.status});return r.json();})
+      .then(d=>{if(opt.method==="GET")cache[ck]={t:Date.now(),d};(tags||[]).forEach(k=>((NET._t=NET._t||{})[k]=1));return d;})
+      .finally(()=>delete inflight[ck]);
+    try{return await inflight[ck]}catch(e){if(queued)enqueue(path,opt);throw e;}
+  }
+  return hit.d;
+}
+function enqueue(path,opt){NET.pending.push({path,opt});}
+async function flushQueue(){while(NET.pending.length&&NET.online){const {path,opt}=NET.pending.shift();try{await api(path,opt,{queued:false});toast("离线时的操作已同步至公会服务器");}catch(e){break;}}}
+function invalidate(tags){tags.forEach(k=>{if(NET._t&&NET._t[k]){NET._t[k]=0;Object.keys(cache).forEach(c=>c.startsWith("/api/"+k)&&delete cache[c]);}});}
+const fetchJSON=async(path,mock)=>{try{return await api(path,{method:"GET"},{cacheKey:path})}catch(e){toast(netErr(e));return mock}};
+
+/* ---------- 竞标 / 组队 / 结算 / 待办（本地 mock 层） ---------- */
+const STORE=k=>JSON.parse(LS.getItem("ag_"+k)||"[]");
+const SAVE=(k,v)=>LS.setItem("ag_"+k,JSON.stringify(v));
+let BIDS=STORE("bids"), TEAMS=STORE("teams"), PENDING=STORE("pending"), RATINGS=STORE("ratings"), NOTIFS=STORE("notifs"), AUDIT=STORE("audit");
+const saveBids=()=>SAVE("bids",BIDS), saveTeams=()=>SAVE("teams",TEAMS), savePending=()=>SAVE("pending",PENDING);
+const saveRatings=()=>SAVE("ratings",RATINGS), saveNotifs=()=>SAVE("notifs",NOTIFS), saveAudit=()=>SAVE("audit",AUDIT);
+
+/* 审计埋点：动作、对象、前后值、操作者角色 */
+function audit(act,obj,extra={}){
+  const u=me()||{name:"匿名访客",role:"guest",id:0};
+  const risky=["冻结资格","授予声望","审核","上下架","删除","定标","结算"].includes(act);
+  AUDIT.unshift({id:Date.now(),at:Date.now(),who:u.name||"系统",role:u.role||"system",act,obj,
+    before:extra.before===undefined?"—":JSON.stringify(extra.before),
+    after:extra.after===undefined?"—":JSON.stringify(extra.after),
+    ip:(extra.ip)||"客户端会话",risk:risky?1:0});
+  AUDIT=AUDIT.slice(0,200);saveAudit();renderAudit();renderAuditCards();
+}
+/* 站内消息：type ∈ quest / team / system / mail */
+function pushNotif(tpl){
+  NOTIFS.unshift({id:Date.now(),read:0,at:Date.now(),...tpl});
+  NOTIFS=NOTIFS.slice(0,300);saveNotifs();renderNotifBadge();
+}
+/* 结算公式：基础 × 评价系数(0.8~1.25) × 时效系数 × 协作系数 */
+function settleMul(r){const s=+r.score||3;return [0.8,0.9,1.0,1.15,1.25][s-1]||1;}
+function poolShare(){
+  const rate=Math.min(1,0.05+TEAMS.filter(t=>t.full).length*.02);
+  return {rate,pool:MOCK.pool,next:MOCK.pool-Math.round(MOCK.pool*rate)};
+}
+
+function renderActivities(){
+  const box=$("#actsBox");
+  if(!box) return;
+  box.innerHTML=MOCK.activities.map(a=>`
+    <div class="act ${a.state==="full"?"full":""}">
+      <div class="act-date"><span>${esc(a.date.split("-")[0])}</span><b>${esc(a.date.split("-")[1])}日</b></div>
+      <div class="act-body">
+        <div class="act-title">${esc(a.title)}</div>
+        <div class="act-desc">${esc(a.desc)}</div>
+      </div>
+      <div class="act-state"><span class="mini ${a.state==="open"?"open":a.state==="soon"?"soon":"full"}">${a.state==="open"?"招募中":a.state==="soon"?"即将开启":"名额已满"}</span></div>
+      <button class="btn btn-sm ${a.state==="open"?"btn-primary":"btn-ghost"}" ${a.state==="open"?"":"disabled"} onclick="joinAct(${a.id})">${a.state==="open"?"立即报名":"暂不可报名"}</button>
+    </div>`).join("");
+}
+async function joinAct(id){
+  const a=MOCK.activities.find(x=>x.id===id);if(!a||a.state!=="open")return;
+  const u=me();if(!u)return toast("请先登录公会");
+  await api(`/api/activities/${id}/join`,{method:"POST"},{queued:true}).catch(()=>{});
+  pushMail(mailTpl.activity(a,u));
+  toast("报名成功，确认函已送入公会信箱");
+}
+
+/* ---------- 渲染：统计 ---------- */
+function countUp(el,target,dur=1600){
+  const t=performance.now();const start=+el.textContent.replace(/,/g,"")||0;
+  (function step(now){const p=Math.min(1,(now-t)/dur);el.textContent=fmt(Math.round(start+(target-start)*p));if(p<1)requestAnimationFrame(step);})(t);
+}
+const io=new IntersectionObserver(en=>{
+  en.forEach(x=>{if(x.isIntersecting&&!x.target.dataset.done){
+    x.target.dataset.done=1;
+    ["s1","s2","s3","s4"].forEach((id,i)=>countUp($("#"+id),[MOCK.stats.adventurers,MOCK.stats.completed,MOCK.stats.cities,MOCK.stats.gold][i]));
+    ["h1","h2","h3","h4"].forEach((id,i)=>countUp($("#"+id),[MOCK.stats.adventurers,MOCK.stats.completed,MOCK.stats.cities,Math.round(MOCK.stats.gold/10000)][i]));
+  }});
+},{threshold:.3});
+["s1","h1"].forEach(id=>io.observe($("#"+id)));
+
+/* ---------- 渲染：任务板 ---------- */
+const RANK={S:"var(--s)",A:"var(--a)",B:"var(--b)",C:"var(--c)"};
+let filter="all",kw="";
+function renderQuests(list){
+  const box=$("#questsBox");
+  const data=list.filter(q=>{
+    const okRank = filter==="all"||filter===q.rank;
+    const okState = filter!=="open" || q.open;
+    const okKw = !kw || (q.title+q.desc+q.tags.join("")).toLowerCase().includes(kw);
+    return okRank && okState && okKw;
+  });
+  if(!data.length){box.innerHTML=`<div class="q-empty">没有符合条件的委托，换个筛选条件试试 ✦</div>`;return;}
+  box.innerHTML=data.map(q=>`
+    <div class="quest" style="--r:${RANK[q.rank]}">
+      <div class="q-head">
+        <div class="q-title">${esc(q.title)}</div>
+        <span class="rank" style="background:${RANK[q.rank]}">${q.rank} 级</span>
+      </div>
+      <p class="q-desc">${esc(q.desc)}</p>
+      <div class="q-meta">
+        ${q.tags.map(t=>`<span class="tag">#${esc(t)}</span>`).join("")}
+        <span class="tag">难度 ${esc(q.diff)}</span>
+        <span class="tag">⏱ ${esc(q.time)}</span>
+        <span class="tag">👥 ${esc(q.people)}</span>
+      </div>
+      <div class="q-foot">
+        <span class="q-price">${fmt(q.gold)} 金${MOCK.bidQuests.includes(q.id)?`<span class="tag reward" style="margin-left:8px">⚔ 竞标中 · ${BIDS.filter(b=>b.qid===q.id).length} 份报价</span>`:""}</span>
+        <div style="display:flex;gap:8px">
+          ${MOCK.bidQuests.includes(q.id)?`<button class="btn btn-sm btn-ghost" onclick="openBid(${q.id})">参与竞标</button>`:""}
+        ${["讨伐","护送","组队限定","遗迹"].some(t=>q.tags.includes(t))?`<button class="btn btn-sm btn-ghost" onclick="openTeam(${q.id})">🛡 组建小队</button>`:""}
+          <button class="btn btn-sm ${q.open?"btn-primary":"btn-ghost"}" ${q.open?"":"disabled"} onclick="acceptQuest(${q.id})">
+            ${q.open?"承接委托":"名额已满"}
+          </button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+$$(".chip").forEach(c=>c.onclick=()=>{
+  $$(".chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");filter=c.dataset.f;renderQuests(MOCK.quests);
+});
+$("#qSearch").oninput=e=>{kw=e.target.value.trim().toLowerCase();renderQuests(MOCK.quests);};
+(async()=>{const q=await fetchJSON("/api/quests",MOCK.quests);if(Array.isArray(q))MOCK.quests=q;renderQuests(MOCK.quests);})();
+(async()=>{const s=await fetchJSON("/api/stats",MOCK.stats);if(s&&s.adventurers)MOCK.stats=s;})();
+(async()=>{const a=await fetchJSON("/api/activities",MOCK.activities);if(Array.isArray(a))MOCK.activities=a;renderActivities();})();
+
+
+/* ==================================================================
+   3) 邮件验证码 + 密码找回
+   流程：请求验证码 → 后端发信 → 用户回填 → 校验 → 注册 / 登录 / 重置
+   真实后端：POST /api/auth/request-code  {scene:"register"|"login"|"reset",email}
+            POST /api/auth/verify-code   {email,code,scene}
+            POST /api/auth/reset-password {email,code,password}
+   演示模式：任何邮箱均可，验证码固定 884920，60 秒冷却，15 分钟有效期
+   ================================================================== */
+const DEMO_CODE="884920", CODE_TTL=15*60*1000, COOLDOWN=60;
+let codeTimer=null, codeSecs=0, codeMeta={};
+
+/* 倒计时 */
+function tickCode(btn,secs){
+  codeSecs=secs;btn.disabled=true;
+  btn.textContent=`重新发送 (${codeSecs}s)`;
+  clearInterval(codeTimer);
+  codeTimer=setInterval(()=>{
+    codeSecs--;
+    if(codeSecs<=0){clearInterval(codeTimer);btn.disabled=false;btn.textContent="重新发送验证码";}
+    else btn.textContent=`重新发送 (${codeSecs}s)`;
+  },1000);
+}
+/* 通用：发验证码 */
+async function sendCode(scene,email,btn){
+  if(!email) return toast("请先填写联络邮箱");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast("邮箱格式不正确");
+  const payload={scene,email};
+  try{
+    await api("/api/auth/request-code",{method:"POST",body:JSON.stringify(payload)});
+  }catch(e){ /* 后端不可用时走演示 */ }
+  codeMeta={scene,email,expires:Date.now()+CODE_TTL};
+  tickCode(btn,COOLDOWN);
+  toast(`验证码已发送至 ${email}（演示码 ${DEMO_CODE}）`);
+  $("#modal").innerHTML=`
+    <div class="verify-box">
+      <div class="vs-title">📮 公会信使已出发</div>
+      <div class="vs-desc">一封带有验证码的信函已送往你的联络邮箱</div>
+      <div class="big">${DEMO_CODE.split("").join(" ")}</div>
+      <div class="sub">有效期 15 分钟 · 本环境为演示，直接使用上方代码</div>
+      <div class="vs-tips">
+        <b>没有收到？</b><br>
+        ① 检查邮箱的「垃圾箱 / 广告邮件」分类<br>
+        ② 确认邮箱地址无误：${esc(email)}<br>
+        ③ 等待 ${COOLDOWN} 秒后点击「重新发送」<br>
+        ④ 真实环境中验证码由后端生成并写入邮件队列，不会出现在页面上
+      </div>
+      <div class="btns"><button class="btn btn-primary" onclick="$('#mask').classList.remove('show')">我知道了</button></div>
+    </div>`;
+  $("#mask").classList.add("show");
+}
+/* 通用：校验验证码 */
+async function verifyCode(email,code,scene){
+  if(!/^\d{6}$/.test(code)) return toast("请输入 6 位数字验证码");
+  if(!codeMeta.email||codeMeta.email!==email||codeMeta.scene!==scene) return toast("请先获取验证码");
+  if(Date.now()>codeMeta.expires) return toast("验证码已过期，请重新获取");
+  try{
+    await api("/api/auth/verify-code",{method:"POST",body:JSON.stringify({email,code,scene})});
+  }catch(e){ /* 演示环境：仅本地校验 */ }
+  if(code!==DEMO_CODE) return toast("验证码不正确，请核对信件");
+  return true;
+}
+
+/* ---------- 密码强度 ---------- */
+function calcStrength(pw){
+  let s=0;
+  if(pw.length>=6) s++;
+  if(pw.length>=10) s++;
+  if(/[A-Za-z]/.test(pw)&&/\d/.test(pw)) s++;
+  if(/[^A-Za-z0-9]/.test(pw)) s++;
+  return Math.min(4,s||(pw.length?1:0));
+}
+function paintStrength(pw,bar,txt){
+  const lvl=calcStrength(pw), map=["极弱","偏弱","中等","强"];
+  bar.className="strength "+(lvl<=1?"weak":lvl<=2?"mid":"strong");
+  txt.textContent=pw?`口令强度：${map[lvl-1]||"极弱"}`:"";
+}
+$("#fPass").addEventListener("input",e=>paintStrength(e.target.value,$("#pwStrength"),$("#pwStrengthTxt")));
+if($("#fPassReg")) $("#fPassReg").addEventListener("input",e=>paintStrength(e.target.value,$("#pwStrength2"),$("#pwStrengthTxt2")));
+
+/* ---------- 登录区：密码 / 验证码 切换 ---------- */
+let loginBy="password";
+function applyLoginMode(){
+  const byCode = loginBy==="code";
+  $("#passField").style.display = byCode?"none":"block";
+  $("#codeField").style.display = byCode?"block":"none";
+  $("#lblPass").textContent  = byCode?"邮箱验证码登录":"口令密码";
+  $("#forgotLink").style.display = byCode?"none":"inline";
+}
+/* 忘记密码 → 重置流程 */
+function openReset(){
+  $("#mask").classList.remove("show");
+  modal(`
+    <h3>🔑 重置口令密码</h3>
+    <div class="sub">三步完成：验证邮箱 → 设置新密码 → 立即登录</div>
+    <div class="field"><label>联络邮箱</label><input id="rEmail" type="email" placeholder="登记时使用的邮箱"></div>
+    <div class="field" style="margin-top:14px">
+      <label>验证码</label>
+      <div class="vcode-wrap">
+        <input id="rCode" maxlength="6" placeholder="6 位数字">
+        <button type="button" class="vcode-btn" id="rSend">发送验证码</button>
+      </div>
+    </div>
+    <div class="field" style="margin-top:14px"><label>新口令密码</label><input id="rPass" type="password" placeholder="至少 6 位"></div>
+    <div class="err" id="rErr"></div>
+    <div class="btns">
+      <button class="btn btn-ghost" onclick="$('#mask').classList.remove('show')">取消</button>
+      <button class="btn btn-primary" id="rSubmit">验证并重置</button>
+    </div>
+    <div class="vs-tips" style="margin-top:18px">
+      <b>找不到登记邮箱？</b> 携带身份证明前往任一公会据点的档案官处，可人工找回账户。
+    </div>`);
+  $("#rSend").onclick=()=>sendCode("reset",$("#rEmail").value.trim(),$("#rSend"));
+  $("#rSubmit").onclick=async()=>{
+    const email=$("#rEmail").value.trim(),code=$("#rCode").value.trim(),pass=$("#rPass").value;
+    $("#rErr").textContent="";
+    if(pass.length<6) return $("#rErr").textContent="新密码至少 6 位";
+    if(!(await verifyCode(email,code,"reset"))) return;
+    try{await api("/api/auth/reset-password",{method:"POST",body:JSON.stringify({email,code,password:pass})});}
+    catch(e){/* 演示环境静默成功 */}
+    toast("口令已重置，请使用新密码登录");
+    $("#mask").classList.remove("show");
+    mode="login";switchMode();
+  };
+}
+$("#forgotLink").onclick=openReset;
+
+/* ---------- 发送验证码按钮绑定 ---------- */
+if($("#sendCode")) $("#sendCode").onclick=()=>sendCode("login",$("#fAccount").value.trim(),$("#sendCode"));
+if($("#sendCodeReg")) $("#sendCodeReg").onclick=()=>sendCode("register",$("#fEmail").value.trim(),$("#sendCodeReg"));
+
+/* ---------- 承接委托弹窗 ---------- */
+async function acceptQuest(id){
+  const q=MOCK.quests.find(x=>x.id===id);if(!q)return;
+  const u=me();
+  if(!u){toast("请先登录公会大厅");location.hash="#join";return;}
+  const isBid=MOCK.bidQuests.includes(id);
+  const hasTeam=TEAMS.some(t=>t.qid===id&&t.members.some(m=>m.id===u.id));
+  modal(`
+    <h3>${isBid?"竞标委托 · ":"承接委托 · "}${esc(q.title)}</h3>
+    <p class="sub">${isBid?"本委托以竞标方式发包，出价最低且资质合格者中标，可组队承接。":"请确认契约信息，接取后需在约定时间内完成交付。"}</p>
+    <div class="row"><span>委托等级</span><b style="color:${RANK[q.rank]}">${q.rank} 级</b></div>
+    <div class="row"><span>难度 / 时长</span><b>${esc(q.diff)} · ${esc(q.time)}</b></div>
+    <div class="row"><span>建议人数</span><b>${esc(q.people)}</b></div>
+    <div class="row"><span>${isBid?"悬赏上限":"报酬"}</span><b>${fmt(q.gold)} 金币</b></div>
+    <div class="row"><span>状态</span><b style="color:#5fd0a0">${q.open?"可接取":"已截止"}</b></div>
+    ${isBid?`<div class="row"><span>当前报价</span><b style="color:var(--gold2)">${BIDS.filter(b=>b.qid===id&&b.state==="pending").length?fmt(Math.min(...BIDS.filter(b=>b.qid===id&&b.state==="pending").map(b=>b.amt)))+" 金 起 · 共 "+BIDS.filter(b=>b.qid===id).length+" 份报价":"尚无报价"}</b></div>`:""}
+    ${hasTeam?`<div class="row"><span>所在小队</span><b style="color:var(--gold2)">${esc(TEAMS.find(t=>t.qid===id&&t.members.some(m=>m.id===u.id)).name)}（协作系数 +0.1）</b></div>`:""}
+    <div class="btns">
+      <button class="btn btn-ghost" onclick="$('#mask').classList.remove('show')">再想想</button>
+      <button class="btn btn-ghost" onclick="$('#mask').classList.remove('show');openQuestIssue()">📮 我想提交委托</button>
+      ${isBid?`<button class="btn btn-primary" onclick="$('#mask').classList.remove('show');openBid(${q.id})">提交竞标报价</button>`:""}
+      ${!isBid?`<button class="btn btn-primary" onclick="submitAccept(${q.id})">以契约立名，承接</button>`:""}
+    </div>`);
+}
+/* 竞标报价弹窗 */
+function openBid(id){
+  const q=MOCK.quests.find(x=>x.id===id);if(!q)return;
+  const u=me();if(!u)return toast("请先登录公会大厅");
+  if(u.frozen) return toast("你的承接资格已被冻结");
+  modal(`
+    <h3>⚔️ 提交竞标报价</h3>
+    <p class="sub">悬赏上限 ${fmt(q.gold)} 金。委托方通常选择报价合理且资质相符的一方，出价低不等于必中。</p>
+    <div class="field"><label>你的报价（金币）</label><input id="bidAmt" type="number" min="1000" max="${q.gold}" value="${Math.round(q.gold*.7)}" placeholder="建议不低于 ${fmt(Math.round(q.gold*.5))}"></div>
+    <div class="field" style="margin-top:14px"><label>承接说明</label><textarea id="bidNote" placeholder="说明你的资质、计划或拟组队情况（可选）" style="width:100%;min-height:74px;padding:11px 12px;border-radius:11px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:#eee;font-family:inherit"></textarea></div>
+    <div class="btns">
+      <button class="btn btn-ghost" onclick="$('#mask').classList.remove('show')">取消</button>
+      <button class="btn btn-primary" onclick="submitBid(${q.id})">确认提交报价</button>
+    </div>`);
+}
+async function submitBid(id){
+  const q=MOCK.quests.find(x=>x.id===id);if(!q)return;
+  const u=me();const amt=+$("#bidAmt").value, note=$("#bidNote").value.trim();
+  if(!amt||amt<1000) return toast("报价至少 1000 金");
+  if(amt>q.gold) return toast("报价不可超过悬赏上限 "+fmt(q.gold)+" 金");
+  try{await api(`/api/quests/${id}/bid`,{method:"POST",body:JSON.stringify({amount:amt,note})},{queued:true}).catch(()=>{});}catch(e){}
+  BIDS.push({id:Date.now(),qid:id,uid:u.id,name:u.name,class:u.class,lv:u.lv,amt,note,state:"pending",at:Date.now()});
+  saveBids();
+  audit("竞标",q.title,{after:{amount:amt,note}});
+  pushNotif({type:"quest",icon:"⚔️",title:"竞标报价已提交",desc:`「${q.title}」报价 ${fmt(amt)} 金，等待委托方定标`,link:"#profile"});
+  renderQuests(MOCK.quests);renderBidPanel();renderProfile(u);
+  $("#mask").classList.remove("show");toast("报价已提交，可在档案页查看竞标记录");
+}
+/* 执事定标 */
+function awardBid(bidId){
+  const b=BIDS.find(x=>x.id===bidId);if(!b||b.state!=="pending")return;
+  const q=MOCK.quests.find(x=>x.id===b.qid);if(!q)return;
+  BIDS.forEach(x=>x.state = x.qid===b.qid ? (x.id===bidId?"won":"lost") : x.state);
+  b.q=Object.assign({},q);q.open=false;
+  PENDING.push({id:Date.now(),q:b.q,u:b.uid,bid:bidId,amt:b.amt,at:Date.now()});
+  saveBids();savePending();
+  audit("定标",q.title,{before:{bids:BIDS.filter(x=>x.qid===b.qid&&x.state==="pending").length},after:{winner:b.name,amount:b.amt}});
+  pushNotif({type:"quest",icon:"🏆",title:"竞标结果已公布",desc:`「${q.title}」由 ${b.name} 中标，报酬 ${fmt(b.amt)} 金`,link:"#profile"});
+  NOTIFS.filter(n=>n.type==="quest"&&n.title==="竞标报价已提交").forEach(n=>{n.read=1;});
+  renderQuests(MOCK.quests);renderBidPanel();renderNotifBadge();renderProfile(me());
+  toast(b.name+" 中标，委托已进入待结算");
+}
+/* 组队：创建 / 申请 / 批准 */
+function openTeam(id){
+  const q=MOCK.quests.find(x=>x.id===id);if(!q)return;
+  const u=me();if(!u)return toast("请先登录公会大厅");
+  const mine=TEAMS.filter(t=>t.leader===u.id&&t.qid===id);
+  modal(`
+    <h3>🛡 组建小队</h3>
+    <p class="sub">${esc(q.title)}　建议 ${esc(q.people)}</p>
+    <div class="field"><label>小队名称</label><input id="tmName" value="${esc(u.name.split("·")[0])}之队"></div>
+    <div class="field" style="margin-top:14px"><label>招募人数（不含队长）</label><input id="tmNeed" type="number" min="1" max="7" value="2"></div>
+    <div class="field" style="margin-top:14px"><label>招募要求</label><input id="tmReq" placeholder="如：B 级以上、需一名治疗"></div>
+    <div class="btns">
+      <button class="btn btn-ghost" onclick="$('#mask').classList.remove('show')">取消</button>
+      <button class="btn btn-primary" onclick="createTeam(${q.id})">创建并招募</button>
+    </div>
+    ${mine.length?`<div class="mtab" style="display:block;margin-top:18px;padding:16px"><h3 style="font-size:1rem">你已组建的小队</h3><div id="myTeams"></div></div>`:""}`);
+  if(mine.length) setTimeout(()=>renderMyTeams(mine),0);
+}
+async function createTeam(qid){
+  const q=MOCK.quests.find(x=>x.id===qid);if(!q)return;
+  const u=me();
+  const t={id:Date.now(),qid,name:$("#tmName").value.trim()||"临时小队",need:Math.max(1,+$("#tmNeed").value||2),
+    req:$("#tmReq").value.trim(),leader:u.id,leaderName:u.name,members:[{id:u.id,name:u.name,class:u.class,lv:u.lv,role:"队长"}],
+    applicants:[],full:false,at:Date.now()};
+  TEAMS.push(t);saveTeams();
+  audit("创建队伍",t.name,{after:{quest:q.title,need:t.need}});
+  pushNotif({type:"team",icon:"🛡",title:"小队已组建",desc:`「${t.name}」开始招募，协作系数 +0.1`,link:"#profile"});
+  renderTeamPanel();$("#mask").classList.remove("show");toast("小队已建立，可在后台「竞标与组队」查看申请");
+}
+function applyTeam(tid){
+  const t=TEAMS.find(x=>x.id===tid);if(!t)return;
+  const u=me();if(!u)return toast("请先登录公会大厅");
+  if(t.members.some(m=>m.id===u.id)||t.applicants.some(m=>m.id===u.id)) return toast("你已在该小队中或已提交申请");
+  t.applicants.push({id:u.id,name:u.name,class:u.class,lv:u.lv,at:Date.now()});saveTeams();
+  audit("申请入队",t.name,{after:{applicant:u.name}});
+  pushNotif({type:"team",icon:"🤝",title:"入队申请已提交",desc:`你已申请加入「${t.name}」，等待队长批准`,link:"#profile"});
+  renderTeamPanel();toast("申请已提交，等待队长审核");
+}
+function approveMember(tid,aid,ok){
+  const t=TEAMS.find(x=>x.id===tid);if(!t)return;
+  const a=t.applicants.find(x=>x.id===aid);if(!a)return;
+  t.applicants=t.applicants.filter(x=>x.id!==aid);
+  if(ok){
+    t.members.push({...a,role:"成员"});
+    if(t.members.length>=t.need+1){t.full=true;}
+    audit("批准入队",t.name,{after:{member:a.name}});
+    pushNotif({type:"team",icon:"✅",title:"入队申请已通过",desc:`欢迎加入「${t.name}」，协作系数 +0.1`,link:"#profile"});
+  }else audit("拒绝入队",t.name,{after:{applicant:a.name}});
+  saveTeams();renderTeamPanel();renderProfile(me());
+}
+async function submitAccept(id){
+  const q=MOCK.quests.find(x=>x.id===id);if(!q)return;
+  const u=me();if(!u)return toast("请先登录公会大厅");
+  try{
+    await api(`/api/quests/${id}/accept`,{method:"POST"},{queued:true});
+    q.open=false;invalidate(["quests"]);renderQuests(MOCK.quests);
+  }catch(e){
+    if(e&&e.offline){toast("当前离线，契约将在恢复连接后自动提交");}
+    else{q.open=false;renderQuests(MOCK.quests);}
+  }
+  PENDING.push({id:Date.now(),q:Object.assign({},q),u:u.id,at:Date.now()});savePending();
+  audit("承接委托",q.title,{after:{rank:q.rank,reward:q.gold}});
+  pushNotif({type:"quest",icon:"📜",title:"契约已成立",desc:`「${q.title}」进入待结算，完成后提交交付凭证即可结算`,link:"#profile"});
+  renderProfile(u);$("#mask").classList.remove("show");toast("契约已成立！委托已进入待结算清单");
+}
+
+/* ==================================================================
+   2) 会员系统：登录 / 登记 / 档案
+   ================================================================== */
+let mode="login";
+$$(".tab").forEach(t=>t.onclick=()=>{mode=t.dataset.tab;switchMode();});
+function switchMode(){
+  $$(".tab").forEach(t=>t.classList.toggle("on",t.dataset.tab===mode));
+  const reg = mode==="reg";
+  $("#regOnly").style.display = reg?"block":"none";
+  $("#regMore").style.display = reg?"block":"none";
+  $("#lblAccount").textContent = reg?"登录邮箱 / 联络方式":"公会登记号";
+  $("#lblPass").textContent  = reg?"设置口令密码":"口令密码";
+  $("#submitBtn").textContent = reg?"完成登记，领取公会徽章":"登录公会大厅";
+  $("#switchHint").innerHTML  = reg?"已是注册冒险者？<a href='#' onclick='mode=\"login\";switchMode()'>直接登录</a>":"尚未登记？<a href='#' onclick='mode=\"reg\";switchMode()'>成为注册冒险者</a>";
+  $("#errBox").textContent="";
+}
+switchMode();
+
+function validate(){
+  const acc=$("#fAccount").value.trim(), pass=$("#fPass").value;
+  if(!acc) return "请填写"+($("#lblAccount").textContent);
+  if(pass.length<6) return "口令密码至少 6 位";
+  if(mode==="reg"){
+    if(!$("#fName").value.trim()) return "请填写冒险者代号";
+    const email=$("#fEmail").value.trim();
+    if(!email) return "请填写联络邮箱";
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "联络邮箱格式不正确";
+    if(calcStrength($("#fPassReg").value)<2) return "口令强度不足，请包含字母与数字且不少于 6 位";
+    if(!$("#fCodeReg").value.trim()) return "请填写邮箱验证码";
+    if(!$("#fClass").value) return "请选择职业";
+    if(!$("#fLv").value||+$("#fLv").value<1) return "请填写有效等级";
+    if(!$("#fAgree").checked) return "请先同意公会章程与委托契约条款";
+  }
+  if(mode==="login"){
+    if(loginBy==="code"&&!$("#fCode").value.trim()) return "请填写邮箱验证码";
+    if(loginBy==="password"&&calcStrength($("#fPass").value)<1) return "口令格式不正确";
+  }
+  return "";
+}
+$("#authForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const err=validate();$("#errBox").textContent=err;if(err)return;
+  const body={
+    account:$("#fAccount").value.trim(),password:$("#fPass").value,
+    email:$("#fEmail").value.trim(),code:$("#fCode").value.trim()||$("#fCodeReg").value.trim(),
+    name:$("#fName").value.trim(),class:$("#fClass").value,
+    lv:+$("#fLv").value||1,city:$("#fCity").value.trim(),spec:$("#fSpec").value.trim()
+  };
+  try{
+    const url = mode==="reg"?"/api/auth/register":"/api/auth/login";
+  if(mode==="login"&&loginBy==="code"){
+    // 验证码登录：先校验，再调用登录接口（演示环境直接通过）
+    if(!(await verifyCode(body.account,$("#fCode").value.trim(),"login"))) return;
+  }
+  if(mode==="reg"){
+    if(!(await verifyCode(body.email,$("#fCodeReg").value.trim(),"register"))) return;
+  }
+    if(!BASE){
+    // 演示环境：mock 登录/登记响应
+    const isAdmin = body.account==="master@silvermoon.guild" || body.account==="执事";
+    const mockRes = {
+      token:"demo-token-"+Math.random().toString(36).slice(2),
+      user:{id:9001,name:body.name||"银刃·艾兰",class:"战士",lv:74,city:"奥古斯都",
+        spec:"龙语通识、开锁",xp:12840,next:15000,achievements:{firstBlood:1,dragonSlayer:1,merchant:1,explorer:0},
+        records:[{title:"讨伐苍穹脊背的成年红龙",rank:"S",date:"大陆历 742 年霜月",time:"7 天"},
+                 {title:"护送商队穿越迷雾峡谷",rank:"A",date:"大陆历 742 年叶月",time:"5 天"}],
+        role:isAdmin?"master":"adventurer"}
+    };
+    return mockRes;
+  }
+  const res = await api(url,{method:"POST",body:JSON.stringify(body)});
+    LS.setItem("ag_token",res.token||"demo-"+Date.now());
+    LS.setItem("ag_me",JSON.stringify(res.user||makeUser(body)));
+    toast(mode==="reg"?"登记完成，欢迎加入银月冒险家协会！":"欢迎回来，冒险者");
+    $("#fPass").value="";refreshUser();
+    if(mode==="reg")setTimeout(()=>pushMail(mailTpl.system("欢迎加入银月冒险家协会","公会总部",
+      `您的冒险者档案已经建立。请于三日内前往就近公会大厅领取实体徽章与首份委托推荐函。当前推荐从 C 级委托入手，积累声望后可逐步承接更高等级的委托。`)),600);
+  }catch(e){
+    // 离线演示：本地构造账号
+    LS.setItem("ag_token","demo-"+Date.now());
+    LS.setItem("ag_me",JSON.stringify(makeUser(body)));
+    toast(mode==="reg"?"登记完成（演示模式）":"登录成功（演示模式）");
+    refreshUser();
+  }
+});
+function makeUser(b){
+  return {id:Date.now(),name:b.name||b.account,class:b.class||"未定",lv:b.lv||1,
+    city:b.city||"流浪中",spec:b.spec||"—",xp:420,next:1000,joined:"大陆历 742 年",
+    records:[],achievements:{firstBlood:1,dragonSlayer:0,explorer:1,mentor:0}};
+}
+const ACH=[
+  {k:"firstBlood",e:"⚔️",n:"初阵告捷",d:"完成第一件委托"},
+  {k:"dragonSlayer",e:"🐉",n:"屠龙者",d:"参与讨伐龙类"},
+  {k:"explorer",e:"🗺️",n:"踏遍者",d:"涉足 10 处遗迹"},
+  {k:"mentor",e:"🤝",n:"引路人",d:"带领新人完成试炼"}
+];
+function renderProfile(u){
+  $("#profile").style.display="block";
+  const pct=Math.min(100,Math.round(u.xp/u.next*100));
+  $("#profileBox").innerHTML=`
+    <div class="avatar-card">
+      <div class="ava">${esc((u.name||"?").slice(0,1))}</div>
+      <div style="font-size:1.2rem;font-weight:800">${esc(u.name)}</div>
+      <div style="color:var(--gold);font-size:.86rem;margin-top:4px">Lv.${u.lv} · ${esc(u.class)}</div>
+      <div style="color:var(--sub);font-size:.82rem;margin-top:12px">${esc(u.city)} · 登记于 ${esc(u.joined)}</div>
+      <div class="lv-bar"><i style="width:${pct}%"></i></div>
+      <div class="xp-txt">声望 ${fmt(u.xp)} / ${fmt(u.next)}（${pct}%）</div>
+      <div style="margin-top:18px;font-size:.84rem;color:var(--sub)">专长：${esc(u.spec)}</div>
+      <div class="ach-grid">
+        ${ACH.map(a=>`<div class="ach ${u.achievements[a.k]?"unlocked":""}"><span class="e">${a.e}</span><span>${a.n}</span></div>`).join("")}
+      </div>
+    </div>
+    <div style="display:grid;gap:22px">
+      <div class="panel">
+        <h3>档案信息</h3><div class="sub">由公会档案官维护，可在任一据点更新</div>
+        <div class="kv">
+          <div><span>公会登记号</span><b>SM-${String(u.id).slice(-6)}</b></div>
+          <div><span>职业</span><b>${esc(u.class)}</b></div>
+          <div><span>等级</span><b>Lv.${u.lv}</b></div>
+          <div><span>所属城邦</span><b>${esc(u.city)}</b></div>
+          <div><span>累计完成委托</span><b>${u.records.length} 件</b></div>
+          <div><span>当前状态</span><b style="color:${u.frozen?"#ff8a7a":"#5fd0a0"}">${u.frozen?"资格已冻结":"可接受委托"}</b></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>委托记录</h3><div class="sub">最近完成的委托将被永久铭刻于公会档案馆</div>
+        ${u.records.length?`<div class="records">${u.records.slice().reverse().map(r=>
+          `<div class="rec"><div><div class="nm">${esc(r.title)}</div><div class="dt">${esc(r.date)} · ${esc(r.time)}${r.rated?"　✦ 已完成结算":""}</div></div>
+           <span class="rk" style="--r:${RANK[r.rank]}">${r.rank} 级</span></div>`).join("")}</div>`
+          :`<div class="empty">尚无委托记录，去<a href="#quests" style="margin:0 4px">任务板</a>接取第一件吧 ✦</div>`}
+      </div>
+      <div class="panel">
+        <h3>待结算委托 <span style="font-size:.78rem;color:var(--sub);font-weight:500">${PENDING.filter(p=>p.u===u.id).length?PENDING.filter(p=>p.u===u.id).length+" 件待交付":""}</span></h3>
+        <div class="sub">提交交付凭证后进入双向互评，评价决定最终报酬系数与声望增减</div>
+        ${PENDING.filter(p=>p.u===u.id).length?`<div class="records">${PENDING.filter(p=>p.u===u.id).map(p=>`
+          <div class="rec">
+            <div><div class="nm">${esc(p.q.title)}</div><div class="dt">承接于 ${new Date(p.at).toLocaleDateString("zh-CN")} · 约定 ${esc(p.q.time)} · 悬赏 ${fmt(p.q.gold)} 金</div></div>
+            <button class="btn btn-primary btn-sm" onclick="openDeliver(${p.id})">提交交付</button>
+          </div>`).join("")}</div>`
+          :`<div class="empty">当前没有待结算的委托 ✦</div>`}
+      </div>
+      <div class="panel">
+        <h3>竞标记录</h3><div class="sub">你参与的竞标委托与组队申请</div>
+        ${BIDS.filter(b=>b.uid===u.id).length?`<div class="records">${BIDS.filter(b=>b.uid===u.id).map(b=>{
+          const q=MOCK.quests.find(x=>x.id===b.qid);const st={won:"竞标成功",lost:"未中标",pending:"竞标中"}[b.state];
+          return `<div class="rec"><div><div class="nm">${esc(q?q.title:b.qid)}</div><div class="dt">${esc(b.amt?"报价 "+fmt(b.amt)+" 金 · ":"")}${st} · ${ago(b.at)}</div></div>
+          <span class="mini ${b.state==="won"?"open":b.state==="lost"?"full":"soon"}">${st}</span></div>`;}).join("")}</div>`
+          :`<div class="empty">尚未参与任何竞标委托 ✦</div>`}
+      </div>
+    </div>`;
+  $("#navProfile").textContent="我的档案";
+}
+function refreshUser(){
+  const u=me();
+  if(u){
+    if(ADMINS.includes(u.role)) promoteAdmin(u);
+    renderProfile(u);$("#navCta").textContent="退出登录";$("#navCta").onclick=()=>{LS.clear();location.reload();};}
+  else{$("#profile").style.display="none";$("#navProfile").textContent="我的档案";$("#navCta").textContent="登录 / 登记";$("#navCta").onclick=()=>location.hash="#join";}
+}
+refreshUser();
+
+
+/* ==================================================================
+   4) 管理后台：发布委托 / 委托管理 / 活动管理 / 冒险者名录 / 审核队列
+   5) 公会信箱：信笺风 HTML 模板 + 往来信件（承接回执 / 报名函 / 通告 / 审核结果）
+   6) 委托审核流：冒险者提交 → 执事审批 → 上架（失败则以信函通知）
+   - 权限：登录用户 role 为 master / clerk 时自动开启
+   - 演示模式：所有写操作作用于内存 MOCK，刷新即复位；接入后端后替换为真实接口
+   - 联网：GET 带 15-60s 内存缓存与请求合并；离线时写操作进入队列，恢复后自动重放；断线顶部出横条提示
+   ================================================================== */
+let adminIn=false, mtab="issue", ADMINS=["master","clerk"];
+
+/* 开启后台：写入演示管理员档案（演示用一键入口） */
+function promoteAdmin(u){
+  if(!u||!ADMINS.includes(u.role)) return;
+  LS.setItem("ag_admin",JSON.stringify({id:u.id,name:u.name,role:u.role,since:"大陆历 742 年霜月"}));
+  $("#navAdmin").style.display="inline-block";
+  $("#abWho").textContent=u.name;
+  $("#abRole").textContent={master:"公会会长",clerk:"执事"}[u.role]||u.role;
+  toast("已获得执事厅访问权限");
+}
+function loadAdminMeta(){
+  try{return JSON.parse(LS.getItem("ag_admin")||"null")}catch(e){return null}
+}
+/* 初次进入：若已登录且有管理员档案，则显示入口 */
+(function(){const a=loadAdminMeta();if(a){$("#navAdmin").style.display="inline-block";$("#abWho").textContent=a.name;$("#abRole").textContent={master:"公会会长",clerk:"执事"}[a.role]||a.role;}})();
+
+/* 打开 / 关闭后台 */
+function openAdmin(force){
+  const u=me(), meta=loadAdminMeta();
+  if(!u||!meta){toast("需先以执事身份登录");location.hash="#join";return;}
+  adminIn=true;document.body.classList.add("has-admin");
+  $("#adminBar").classList.add("in");$("#adOverlay").classList.add("in");
+  renderAdStats();renderQManage();renderAManage();renderAdManage();renderReviews();renderReviewLog();renderBidPanel();renderTeamPanel();renderDashboard();renderAudit();renderAuditCards();switchMtab();
+  $("#adShortcut").style.display="none";
+}
+function closeAdmin(){adminIn=false;document.body.classList.remove("has-admin");$("#adminBar").classList.remove("in");$("#adOverlay").classList.remove("in");$("#adShortcut").style.display="block";}
+$("#navAdmin").onclick=openAdmin;
+$("#adShortcut").onclick=openAdmin;
+$("#abLogout").onclick=()=>{LS.removeItem("ag_admin");$("#navAdmin").style.display="none";closeAdmin();toast("已退出执事模式");};
+addEventListener("keydown",e=>{if(e.key==="Escape"&&adminIn)closeAdmin();});
+/* 后台 Tab 切换 */
+$$(".ad-tab").forEach(t=>t.onclick=()=>{mtab=t.dataset.m;switchMtab();});
+function switchMtab(){
+  $$(".ad-tab").forEach(x=>x.classList.toggle("on",x.dataset.m===mtab));
+  $$(".mtab").forEach(x=>x.style.display=x.dataset.mtab===mtab?"block":"none");
+}
+
+/* 概览卡 */
+function renderAdStats(){
+  const q=MOCK.quests, a=MOCK.activities, adv=MOCK.adventurers;
+  const cards=[
+    {l:"委托总数",v:q.length,t:`${q.filter(x=>x.open).length} 件开放承接`,c:"var(--gold)"},
+    {l:"草稿 / 下架",v:q.filter(x=>!x.open).length,t:"仅执事厅可见",c:"#8a8fad"},
+    {l:"报名中活动",v:a.filter(x=>x.state==="open").length,t:"共 "+a.length+" 场排期",c:"#5fd0a0"},
+    {l:"在册冒险者",v:adv.length,t:"Lv.60 以上 "+adv.filter(x=>x.lv>=60).length+" 人",c:"#e8aa3c"}
+  ];
+  $("#adStats").innerHTML=cards.map(c=>`
+    <div class="card" style="padding:20px 22px">
+      <div class="sub" style="font-size:.8rem;color:var(--sub)">${c.l}</div>
+      <div style="font-size:2rem;font-weight:900;margin:6px 0;color:${c.c}">${c.v}</div>
+      <div style="font-size:.78rem;color:var(--sub)">${c.t}</div>
+    </div>`).join("");
+  $("#nQuests").textContent=q.length;
+  $("#nActs").textContent=a.length;
+  $("#nAdvs").textContent=adv.length;
+  const rp=REVIEWS.filter(q=>q._status==="pending").length;
+  $("#nReview").textContent=rp||"";if(!rp)$("#nReview").style.display="none";
+}
+
+/* 发布委托（参数化，供执事直发与冒险者提交共用） */
+const ISSUE_TAGS=["讨伐","护送","调查","采集","清剿","回收","遗迹","解谜","高危","组队限定","新手友好","龙类"];
+let pickTags=new Set();
+function bindTags(root){
+  $$(root+" .tag-pick span").forEach(sp=>sp.onclick=()=>{
+    const v=sp.textContent, set=root==="#qiForm"?qiTags:pickTags;
+    set.has(v)?set.delete(v):set.add(v);sp.classList.toggle("on",set.has(v));
+  });
+}
+function issuePayload(root){
+  const p=s=>$(root+" "+s).value.trim();
+  const rank={S:"S",A:"A",B:"B",C:"C"}[$(root+" #iRank").selectedIndex-1];
+  return {rank,title:p("#iTitle"),desc:p("#iDesc"),diff:p("#iDiff")||"中等",time:p("#iTime"),
+    people:p("#iPeople"),gold:+$("#iGold").value||0,tags:[...(root==="#qiForm"?qiTags:pickTags)],
+    open:root==="#qiForm"?true:$(root+" #iOpen").checked};
+}
+function resetIssue(root){
+  const f=$(root);f.reset();
+  (root==="#qiForm"?qiTags:pickTags).clear();
+  $$(root+" .tag-pick span").forEach(sp=>sp.classList.remove("on"));
+  $(root+" #iRank").selectedIndex=0;if($(root+" #iOpen"))$(root+" #iOpen").checked=true;
+}
+$("#iDraft").onclick=()=>{
+  const d=issuePayload("#issueForm");
+  if(!d.title) return $("#issueErr").textContent="至少填写委托标题";
+  MOCK.drafts=(MOCK.drafts||[]);MOCK.drafts.unshift({...d,id:Date.now(),saved:"刚刚"});
+  $("#issueErr").textContent="";toast("已存为草稿，可在「委托管理」中查看");
+};
+/* 执事直发：即时上架 */
+$("#issueForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const d=issuePayload("#issueForm"), err=
+    !d.rank?"请选择委托等级":
+    !d.title?"请填写委托标题":
+    d.title.length<4?"标题过短，请描述得更具体些":
+    !d.desc?"请填写委托详情":
+    d.desc.length<16?"详情至少需要 16 个字，说清楚目标与风险":
+    !d.gold?"请填写报酬金额":
+    !d.tags.length?"请至少选择一个标签":"";
+  $("#issueErr").textContent=err;if(err)return;
+  const payload={...d,id:Date.now(),date:"即日"};
+  try{await api("/api/admin/quests",{method:"POST",body:JSON.stringify(payload)});}catch(err2){/* 演示环境静默 */ }
+  MOCK.quests.unshift(payload);invalidate(["quests"]);
+  $("#issueErr").textContent="";
+  toast(`委托已${d.open?"发布并开放承接":"存为草稿"}：${d.title}`);
+  resetIssue("#issueForm");renderQuests(MOCK.quests);renderAdStats();renderQManage();
+});
+/* 冒险者提交委托：进入审核队列 */
+function openQuestIssue(){
+  modal(`<h3 style="font-family:var(--serif)">提交委托申请</h3>
+    <div class="desc">委托将由执事厅复核后决定是否上架。带 <b style="color:var(--gold)">*</b> 为必填项。</div>
+    <form id="qiForm" novalidate>
+      <div class="frow" style="margin-bottom:14px">
+        <div class="field"><label>委托等级 *</label>
+          <select id="iRank"><option value="">选择等级</option><option>S 级 · 国家级威胁</option><option>A 级 · 高难度</option><option>B 级 · 中等</option><option>C 级 · 新手友好</option></select></div>
+        <div class="field"><label>委托标题 *</label><input id="iTitle" placeholder="如：讨伐苍穹脊背的成年红龙"></div>
+      </div>
+      <div class="field" style="margin-bottom:14px"><label>委托详情 *</label><textarea id="iDesc" placeholder="说明目标、地点、风险、支援条件与交付凭证……"></textarea></div>
+      <div class="frow" style="margin-bottom:14px">
+        <div class="field"><label>难度</label><select id="iDiff"><option>简单</option><option>中等</option><option>较难</option><option>极难</option></select></div>
+        <div class="field"><label>预计耗时</label><input id="iTime" placeholder="如：3-5 天"></div>
+      </div>
+      <div class="frow three" style="margin-bottom:14px">
+        <div class="field"><label>建议人数</label><input id="iPeople" placeholder="如：2-4 人"></div>
+        <div class="field"><label>报酬（金币）*</label><input id="iGold" type="number" min="0" placeholder="480000"></div>
+        <div class="field"><label>标签（可多选）</label>
+          <div class="tag-pick" id="iTags">
+            <span>讨伐</span><span>护送</span><span>调查</span><span>采集</span><span>清剿</span><span>回收</span><span>遗迹</span><span>解谜</span><span>高危</span><span>组队限定</span><span>新手友好</span><span>龙类</span>
+          </div></div>
+      </div>
+      <div class="err" id="qiErr"></div>
+      <div class="modal-btns"><button type="button" class="btn btn-ghost" onclick="$('#mask').classList.remove('show')">取消</button>
+        <button type="submit" class="btn btn-primary">📮 递交执事厅审核</button></div>
+    </form>`);
+  bindTags("#qiForm");
+  $("#qiForm").addEventListener("submit",e=>{e.preventDefault();submitQuest();});
+}
+let qiTags=new Set();
+
+/* 委托管理 */
+function renderQManage(){
+  const box=$("#qManage");
+  if(!MOCK.quests.length){box.innerHTML=`<div class="empty-m">暂无委托，去「发布委托」起草第一件吧</div>`;return;}
+  box.innerHTML=MOCK.quests.map(q=>`
+    <div class="qm" style="--r:${RANK[q.rank]}">
+      <span class="rk2">${q.rank} 级</span>
+      <div class="body">
+        <div class="t">${esc(q.title)}</div>
+        <div class="d">${esc(q.desc.slice(0,70))}${q.desc.length>70?"…":""} · ⏱ ${esc(q.time)} · 👥 ${esc(q.people)} · ${fmt(q.gold)} 金</div>
+      </div>
+      <div class="acts">
+        <button class="btn btn-sm btn-ghost" onclick="editQuest(${q.id})">编辑</button>
+        <button class="btn btn-sm btn-ghost" onclick="delQuest(${q.id})">删除</button>
+      </div>
+      <div class="switch ${q.open?"on":""}" title="${q.open?"点击下架":"点击上架"}" onclick="toggleQuest(${q.id},this)"><i></i></div>
+    </div>`).join("");
+}
+async function toggleQuest(id,el){
+  const q=MOCK.quests.find(x=>x.id===id);if(!q)return;
+  const next=!q.open;
+  try{await api(`/api/admin/quests/${id}`,{method:"PATCH",body:JSON.stringify({open:next})});}catch(e){}
+  q.open=next;
+  el.classList.toggle("on",next);
+  renderQuests(MOCK.quests);renderAdStats();
+  toast(`「${q.title}」已${next?"开放承接":"下架"}`);
+}
+function editQuest(id){
+  const q=MOCK.quests.find(x=>x.id===id);if(!q)return;
+  modal(`
+    <h3>✍️ 修订委托</h3>
+    <div class="sub">${esc(q.rank)} 级 · ${esc(q.title)}</div>
+    <div class="field"><label>委托标题</label><input id="eTitle" value="${esc(q.title)}"></div>
+    <div class="field" style="margin-top:14px"><label>委托详情</label><textarea id="eDesc">${esc(q.desc)}</textarea></div>
+    <div class="frow" style="margin-top:14px">
+      <div class="field"><label>报酬（金币）</label><input id="eGold" type="number" value="${q.gold}"></div>
+      <div class="field"><label>预计耗时</label><input id="eTime" value="${esc(q.time)}"></div>
+    </div>
+    <div class="field" style="margin-top:14px"><label>标签</label>
+      <div class="tag-pick" id="eTags">${ISSUE_TAGS.map(t=>`<span class="${q.tags.includes(t)?"on":""}">${t}</span>`).join("")}</div>
+    </div>
+    <div class="err" id="eErr"></div>
+    <div class="btns">
+      <button class="btn btn-ghost" onclick="$('#mask').classList.remove('show')">取消</button>
+      <button class="btn btn-primary" id="eSave">保存修订</button>
+    </div>`);
+  const set=new Set(q.tags);
+  $$("#eTags span").forEach(sp=>sp.onclick=()=>{set.has(sp.textContent)?set.delete(sp.textContent):set.add(sp.textContent);sp.classList.toggle("on",set.has(sp.textContent));});
+  $("#eSave").onclick=async()=>{
+    const t=$("#eTitle").value.trim(),d=$("#eDesc").value.trim(),g=+$("#eGold").value||0,time=$("#eTime").value.trim();
+    if(!t||!d||!g) return $("#eErr").textContent="标题、详情与报酬均需填写";
+    try{await api(`/api/admin/quests/${id}`,{method:"PATCH",body:JSON.stringify({title:t,desc:d,gold:g,time,tags:[...set]})});}catch(e){}
+    Object.assign(q,{title:t,desc:d,gold:g,time,tags:[...set]});
+    $("#mask").classList.remove("show");renderQuests(MOCK.quests);renderQManage();toast("委托已修订");
+  };
+}
+async function delQuest(id){
+  const q=MOCK.quests.find(x=>x.id===id);if(!q)return;
+  if(!confirm(`确定删除委托「${q.title}」？此操作不可撤销。`)) return;
+  try{await api(`/api/admin/quests/${id}`,{method:"DELETE"});}catch(e){}
+  MOCK.quests=MOCK.quests.filter(x=>x.id!==id);
+  renderQuests(MOCK.quests);renderQManage();renderAdStats();toast("委托已撤销");
+}
+
+/* 活动管理 */
+const STATE_TXT={open:["招募中","mini open"],soon:["即将开启","mini soon"],full:["名额已满","mini full"]};
+function renderAManage(){
+  $("#aManage").innerHTML=MOCK.activities.map(a=>`
+    <tr>
+      <td><b>${esc(a.date)}</b></td>
+      <td><div style="font-weight:700">${esc(a.title)}</div><div style="font-size:.78rem;color:var(--sub);margin-top:3px">${esc(a.desc.slice(0,46))}${a.desc.length>46?"…":""}</div></td>
+      <td><span class="mini ${STATE_TXT[a.state][1]}">${STATE_TXT[a.state][0]}</span> · ${esc(a.cap)}</td>
+      <td><div class="op">
+        ${["open","soon","full"].map(s=>`<button class="btn btn-sm ${a.state===s?"btn-primary":"btn-ghost"}" onclick="setAState(${a.id},'${s}')">${STATE_TXT[s][0]}</button>`).join("")}
+      </div></td>
+    </tr>`).join("");
+}
+function setAState(id,st){
+  const a=MOCK.activities.find(x=>x.id===id);if(!a)return;
+  a.state=st;a.cap={open:"招募中 1/40",soon:"即将开启报名",full:"名额已满"}[st];
+  renderActivities();renderAManage();toast(`「${a.title}」状态已更新为 ${STATE_TXT[st][0]}`);
+}
+
+/* 冒险者名录 */
+function renderAdManage(){
+  const box=$("#adManage");
+  if(!MOCK.adventurers.length){box.innerHTML=`<tr><td colspan="6"><div class="empty-m">尚无冒险者登记</div></td></tr>`;return;}
+  box.innerHTML=MOCK.adventurers.map(a=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><span class="ava" style="width:34px;height:34px;font-size:.85rem;margin:0">${esc(a.name[0])}</span><div><div style="font-weight:700">${esc(a.name)}</div><div style="font-size:.74rem;color:var(--sub)">SM-${String(a.id).slice(-6)}</div></div></div></td>
+      <td>${esc(a.class)} · Lv.${a.lv}</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><span class="chip-sm"><i></i>${a.xp}</span></div></td>
+      <td>${a.records.length}</td>
+      <td><span class="mini ${a.frozen?"full":"open"}">${a.frozen?"已冻结":"正常"}</span></td>
+      <td><div class="op">
+        <button class="btn btn-sm ${a.frozen?"btn-primary":"btn-ghost"}" onclick="toggleAdv(${a.id})">${a.frozen?"解除":"冻结"}</button>
+        <button class="btn btn-sm btn-ghost" onclick="awardAdv(${a.id})">+ 声望</button>
+      </div></td>
+    </tr>`).join("");
+}
+function toggleAdv(id){
+  const a=MOCK.adventurers.find(x=>x.id===id);if(!a)return;
+  audit("冻结资格",a.name,{before:{frozen:!a.frozen},after:{frozen:a.frozen}});
+  pushNotif({type:"system",icon:"⚠️",title:a.frozen?"承接资格已被冻结":"承接资格已恢复",desc:`${a.name} 的委托承接资格${a.frozen?"暂停":"恢复"},可承接记录不受影响`,link:"#profile"});
+  a.frozen=!a.frozen;renderAdManage();renderProfile(me());toast(`${a.name} 的承接资格已${a.frozen?"冻结":"恢复"}`);
+}
+function awardAdv(id){
+  const a=MOCK.adventurers.find(x=>x.id===id);if(!a)return;
+  a.xp+=500;renderAdManage();toast(`已授予 ${a.name} 500 声望`);
+}
+
+/* ==================================================================
+   5) 公会信箱：信笺风 HTML 模板 + 往来信件 CRUD
+   ================================================================== */
+const MAILBOX_KEY="ag_mailbox";
+const MAILBOX=JSON.parse(LS.getItem(MAILBOX_KEY)||"[]");
+function saveMail(){LS.setItem(MAILBOX_KEY,JSON.stringify(MAILBOX));}
+function fromNow(t){const d=Math.floor((Date.now()-t)/60000);return d<1?"刚刚":d<60?d+" 分钟前":d<1440?Math.floor(d/60)+" 小时前":"更早";}
+
+const mailTpl={
+  quest:(q,a)=>({type:"委托承接回执",from:"委托受理处 · 银月公会",
+    subject:`【${q.rank}级】${q.title} — 承接确认函`,
+    body:`<div class="ml"><div class="ml-hd"><div class="ml-sigil">月</div><div class="ml-tt">银月冒险家协会<br><span>委托受理处 · 文书函</span></div><div class="ml-seal">印</div></div>
+      <div class="ml-rule"></div>
+      <div class="ml-addr">致 <b>${esc(a.name||"冒险者")}</b> 阁下　登记号 SM-${String(a.id||"000000").slice(-6)}</div>
+      <p>您于 <b>${new Date().toLocaleString("zh-CN")}</b> 向本公会递交的委托承接申请，业已登记在册。</p>
+      <table class="ml-tb"><tr><th>委托等级</th><td><span class="rank rank-${q.rank}">${q.rank}</span></td><th>预估难度</th><td>${esc(q.diff)}</td></tr>
+      <tr><th>预计耗时</th><td>${esc(q.time)}</td><th>建议人数</th><td>${esc(q.people)}</td></tr>
+      <tr><th>报酬</th><td colspan="3">${fmt(q.gold)} 金币</td></tr></table>
+      <div class="ml-quest">${esc(q.title)}</div>
+      <p>${esc(q.desc)}</p>
+      <div class="ml-note"><b>行前须知</b><br>① 请于三日内至公会大厅领取委托文书与路引。<br>② 中途放弃须提前一日报备，否则影响声望评定。<br>③ 完成凭证请交由档案官核验后结算报酬。</div>
+      <div class="ml-foot">此致 · 愿月光护佑你的征途<br>银月冒险家协会 委托受理处</div></div>`}),
+  activity:(a,u)=>({type:"活动报名回执",from:"活动统筹官 · 莉瑟",
+    subject:`「${a.title}」报名确认`,
+    body:`<div class="ml"><div class="ml-hd"><div class="ml-sigil">月</div><div class="ml-tt">银月冒险家协会<br><span>活动统筹处 · 集合函</span></div><div class="ml-seal">印</div></div>
+      <div class="ml-rule"></div>
+      <div class="ml-addr">致 <b>${esc(u.name||"冒险者")}</b> 阁下</div>
+      <p>您的活动报名申请已获确认，席位已为您保留。</p>
+      <table class="ml-tb"><tr><th>集合时间</th><td>大陆历 742 年 ${esc(a.date.replace("-"," 月 "))} 日 · 辰时</td></tr>
+      <tr><th>集合地点</th><td>公会大厅东侧集合石</td></tr></table>
+      <div class="ml-quest">${esc(a.title)}</div>
+      <p>${esc(a.desc)}</p>
+      <div class="ml-note"><b>请随身携带</b><br>公会徽章、个人装备清单、以及不少于三日的干粮与药剂。</div>
+      <div class="ml-foot">此致 · 愿月光护佑你的征途<br>银月冒险家协会 活动统筹处</div></div>`}),
+  system:(t,s,b)=>({type:"公会通告",from:"公会总部",
+    subject:t,body:`<div class="ml"><div class="ml-hd"><div class="ml-sigil">月</div><div class="ml-tt">银月冒险家协会<br><span>总部 · 通告函</span></div><div class="ml-seal">印</div></div>
+      <div class="ml-rule"></div><div class="ml-addr">致 全体在册冒险者</div><p>${b}</p>
+      <div class="ml-foot">此致 · 愿月光护佑你的征途<br>银月冒险家协会 总部</div></div>`}),
+  review:(q,a)=>({type:"委托审核结果",from:"公会执事厅",
+    subject:`「${q.title}」${a==="pass"?"已获准上架":"未能通过审核"}`,
+    body:`<div class="ml"><div class="ml-hd"><div class="ml-sigil">月</div><div class="ml-tt">银月冒险家协会<br><span>执事厅 · 审核函</span></div><div class="ml-seal">印</div></div>
+      <div class="ml-rule"></div><div class="ml-addr">致 <b>${esc(q._issuer||"执事")}</b> 阁下</div>
+      <p>您提交的委托 <b>${esc(q.title)}</b> 经执事厅复核，结果为：<b style="color:${a==="pass"?"#c8a24a":"#c94242"}">${a==="pass"?"准予上架":"退回修改"}</b>。</p>
+      ${a==="pass"?`<p>委托已出现在任务板，冒险者们可即刻承接。完成后报酬将依约结算。</p>`
+      :`<p>主要问题：委托描述中风险与报酬不匹配，请补充具体目标与验收凭证后重新提交。</p>`}
+      <div class="ml-foot">此致 · 愿月光护佑你的征途<br>银月冒险家协会 执事厅</div></div>`})
+};
+function pushMail(tpl){MAILBOX.unshift({id:Date.now(),read:0,...tpl,at:Date.now()});saveMail();renderMailBadge();}
+function openMail(){
+  $("#mailMask").classList.add("show");$("#mailList").style.display="block";$("#mailRead").style.display="none";
+  renderMailList();
+}
+function closeMail(){$("#mailMask").classList.remove("show");}
+$("#mailMask").addEventListener("click",e=>{if(e.target===$("#mailMask"))closeMail();});
+$("#navMail").onclick=openMail;
+function ago(t){return fromNow(t);}
+function renderMailList(){
+  const box=$("#mailList"), empty=$("#mailEmpty");
+  if(!MAILBOX.length){box.innerHTML="";empty.style.display="block";return;}
+  empty.style.display="none";
+  box.innerHTML=MAILBOX.map((m,i)=>`
+    <div class="ml-item ${m.read?"":"unread"} ${i===MAILBOX._cur?"sel":""}" onclick="readMail(${i})">
+      <div class="ml-dot"></div>
+      <div class="ml-wrap">
+        <div class="ml-from">${esc(m.from)} · ${esc(m.type)}</div>
+        <div class="ml-subject">${esc(m.subject)}</div>
+        <div class="ml-peek">${esc((m.body.replace(/<[^>]+>/g,"")||"").slice(0,46))}</div>
+      </div>
+      <div class="ml-when">${ago(m.at)}</div>
+    </div>`).join("");
+}
+function readMail(i){
+  const m=MAILBOX[i];if(!m)return;
+  MAILBOX._cur=i;m.read=1;saveMail();renderMailBadge();
+  $("#mailList").style.display="none";$("#mailRead").style.display="block";
+  $("#mrTag").textContent=m.type;$("#mrTitle").textContent=m.subject;
+  $("#mrMeta").textContent=`发件人：${m.from}　·　${new Date(m.at).toLocaleString("zh-CN")}`;
+  $("#mailFrame").srcdoc=m.body;
+  $("#mrActs").innerHTML=`
+    <button class="btn btn-ghost btn-sm" onclick="backToList()">返回列表</button>
+    ${m.type==="委托审核结果"?`<button class="btn btn-primary btn-sm" onclick="openAdmin();switchMtab('issue');closeMail()">查看委托</button>`:""}
+    <button class="btn btn-ghost btn-sm" style="color:#c94242;border-color:rgba(201,66,66,.4)" onclick="delMail(${i})">移出信箱</button>`;
+  renderMailList();
+}
+function backToList(){$("#mailList").style.display="block";$("#mailRead").style.display="none";MAILBOX._cur=null;renderMailList();}
+function delMail(i){MAILBOX.splice(i,1);saveMail();backToList();toast("信函已移出信箱");}
+function markAllRead(){MAILBOX.forEach(m=>m.read=1);saveMail();renderMailList();renderMailBadge();toast("已全部标为已读");}
+function renderMailBadge(){const n=MAILBOX.filter(m=>!m.read).length,b=$("#mailBadge");b.textContent=n>9?"9+":n;b.style.display=n?"flex":"none";}
+
+/* ==================================================================
+   6) 委托审核流：冒险者提交 → 执事审批 → 上架
+   ================================================================== */
+const REVIEWS=JSON.parse(LS.getItem("ag_reviews")||"[]");
+function saveReviews(){LS.setItem("ag_reviews",JSON.stringify(REVIEWS));}
+function switchMtab(t){mtab=t||mtab;$$(".ad-tab").forEach(x=>x.classList.toggle("on",x.dataset.m===mtab));$$(".mtab").forEach(x=>x.style.display=x.dataset.mtab===mtab?"block":"none");}
+
+/* 冒险者提交委托（草稿态，需审核） */
+function submitQuest(){
+  const f=$("#qiForm"), fd=new FormData(f);
+  const d={title:(fd.get("title")||"").trim(),desc:(fd.get("desc")||"").trim(),rank:fd.get("rank"),diff:fd.get("diff"),time:(fd.get("time")||"").trim(),
+    people:(fd.get("people")||"").trim(),gold:+(fd.get("gold")||0),tags:fd.getAll("tags")};
+  if(!d.title||d.title.length<4||d.title.length>26)return toast("委托标题需在 4–26 字之间");
+  if(d.desc.length<16)return toast("委托详情至少 16 字，说清目标与风险");
+  if(!d.gold||d.gold<100)return toast("请填写合理报酬（不少于 100 金币）");
+  if(!d.tags.length)return toast("至少选择一个委托标签");
+  const u=me()||{name:"匿名冒险者",id:"000000"};
+  const q={id:Date.now(),rank:d.rank,title:d.title,desc:d.desc,diff:d.diff,time:d.time,people:d.people,gold:d.gold,open:false,tags:d.tags,_issuer:u.name,_issuerId:u.id,_status:"pending",_at:Date.now()};
+  REVIEWS.unshift(q);saveReviews();MOCK.quests.unshift(q);
+  pushMail(mailTpl.system("委托已提交，等待执事审核","公会总部",
+    `您提交的委托「${d.title}」已进入审核队列，执事厅通常于两个工作日内给出答复，结果将以信函送达公会信箱。`));
+  $("#mask").classList.remove("show");renderQuests();renderReviews();toast("委托已提交，等待执事审批");f.reset();
+}
+/* 审核列表 */
+function renderReviews(){
+  const box=$("#rvList");
+  if(!box) return;
+  const rows=REVIEWS.filter(q=>q._status==="pending");
+  if(!rows.length){box.innerHTML=`<div class="empty-m">审核队列已清空，无待办委托</div>`;return;}
+  box.innerHTML=rows.map(q=>`
+    <div class="rv-item">
+      <span class="rank rank-${q.rank}">${q.rank}</span>
+      <div class="rv-info">
+        <div class="rv-t">${esc(q.title)}</div>
+        <div class="rv-s">提交人 ${esc(q._issuer)} · ${ago(q._at)} · ${esc(q.people)} · ${fmt(q.gold)} 金</div>
+      </div>
+      <div class="rv-meta">${esc(q.tags.join(" / "))}</div>
+      <button class="btn btn-primary btn-sm" onclick="reviewQuest(${q.id},'pass')">准予上架</button>
+      <button class="btn btn-ghost btn-sm" onclick="reviewQuest(${q.id},'reject')">退回</button>
+    </div>`).join("");
+}
+function reviewQuest(id,act){
+  const q=REVIEWS.find(x=>x.id===id);if(!q)return;
+  q._status=act==="pass"?"passed":"rejected";q.open=act==="pass";saveReviews();
+  pushMail(mailTpl.review(q,act));
+  renderQuests();renderReviews();renderAdStats();invalidate(["quests"]);
+  toast(act==="pass"?"委托已上架至任务板":"委托已退回，冒险者将收到信函");
+}
+/* 已处理记录 */
+function renderReviewLog(){
+  const box=$("#rvLog");if(!box)return;
+  const rows=REVIEWS.filter(q=>q._status!=="pending");
+  box.innerHTML=rows.length?rows.map(q=>`<div class="rv-item" style="opacity:.75">
+    <span class="rank rank-${q.rank}">${q.rank}</span>
+    <div class="rv-info"><div class="rv-t">${esc(q.title)}</div><div class="rv-s">${esc(q._issuer)} · ${ago(q._at)}</div></div>
+    <span class="mini ${q._status==="passed"?"open":"full"}">${q._status==="passed"?"已上架":"已退回"}</span></div>`).join("")
+    :`<div class="empty-m">尚无审核记录</div>`;
+}
+
+renderMailBadge();
+$("#netDot").classList.toggle("off",!NET.online);
+renderNotifBadge();renderNotifDot();
+
+/* ---------- 交付凭证 → 结算弹窗 ---------- */
+function openDeliver(pid){
+  const p=PENDING.find(x=>x.id===pid);if(!p)return;
+  modal(`
+    <h3>📦 提交交付凭证</h3>
+    <p class="sub">${esc(p.q.title)}　约定 ${esc(p.q.time)}　悬赏 ${fmt(p.q.gold)} 金</p>
+    <div class="field"><label>交付凭证</label>
+      <textarea id="dlProof" placeholder="描述交付物与完成情况，如：已带回蛙王之牙三枚、附村落证言" style="width:100%;min-height:96px;padding:12px 13px;border-radius:11px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:#eee;font-family:inherit;resize:vertical"></textarea></div>
+    <div class="frow" style="margin-top:14px">
+      <div class="field" style="margin:0"><label>实际耗时（天）</label><input id="dlDays" type="number" min="0.5" step="0.5" value="1"></div>
+      <div class="field" style="margin:0"><label>是否组队完成</label>
+        <select id="dlTeam"><option value="0">否</option><option value="0.1">是（协作系数 +0.1）</option></select></div>
+    </div>
+    <div class="btns" style="margin-top:18px">
+      <button class="btn btn-ghost" onclick="$('#mask').classList.remove('show')">稍后提交</button>
+      <button class="btn btn-primary" onclick="submitDeliver(${p.id})">提交凭证，等待结算</button>
+    </div>`);
+}
+async function submitDeliver(pid){
+  const p=PENDING.find(x=>x.id===pid);if(!p)return;
+  const proof=$("#dlProof").value.trim(), days=+$("#dlDays").value||1, teamCoef=+$("#dlTeam").value||0;
+  if(proof.length<6) return toast("请填写交付凭证，至少 6 个字");
+  try{await api(`/api/quests/${p.q.id}/deliver`,{method:"POST",body:JSON.stringify({proof,days,teamCoef})},{queued:true}).catch(()=>{});}catch(e){}
+  p.proof=proof;p.days=days;p.teamCoef=teamCoef;p.delivered=1;p.doneAt=Date.now();savePending();
+  audit("提交交付",p.q.title,{after:{proof,days}});
+  pushNotif({type:"quest",icon:"📦",title:"交付凭证已提交",desc:`「${p.q.title}」等待委托方与公会双方互评`,link:"#profile"});
+  pushMail(mailTpl.system("交付凭证已提交，等待结算","公会结算处",
+    `您提交的「${p.q.title}」交付凭证已送达结算处。请与委托方在结算台完成双向互评，最终报酬将按评价系数（0.8～1.25）与时效系数核算，并于互评完成后发放。`));
+  renderProfile(me());$("#mask").classList.remove("show");toast("凭证已提交，请前往结算台完成互评");
+  setTimeout(()=>openRate(pid,"adventurer"),500);
+}
+/* 双向互评弹窗：role = adventurer（委托方评冒险者）| client（冒险者评委托方） */
+function openRate(pid,role){
+  const p=PENDING.find(x=>x.id===pid);if(!p)return;
+  const key=(role==="client"?"c":"a")+"r";
+  const dims = role==="client"
+    ? [{k:"comm",n:"委托方沟通"},{k:"pay",n:"报酬兑现"},{k:"risk",n:"风险描述准确"},{k:"coop",n:"配合程度"},{k:"info",n:"情报完整度"}]
+    : [{k:"qual",n:"资质与装备"},{k:"exec",n:"执行完成度"},{k:"time",n:"时效守约"},{k:"comm",n:"沟通配合"},{k:"safe",n:"安全意识"}];
+  const title = role==="client"?"评价委托方 · 公会互评":"委托方评价 · 双向互评";
+  modal(`
+    <h3>⭐ ${title}</h3>
+    <p class="sub">${esc(p.q.title)}　评分将直接影响最终报酬系数与双方声望</p>
+    <div class="field"><label>综合评分</label>
+      <div style="display:flex;gap:10px;font-size:1.7rem;letter-spacing:.15em" id="rateStars">
+        ${[1,2,3,4,5].map(s=>`<span style="cursor:pointer;opacity:.35;transition:.15s" onclick="setRate(${s})" data-s="${s}">★</span>`).join("")}
+      </div>
+      <div style="font-size:.8rem;color:var(--sub);margin-top:6px" id="rateHint">点击星星评分，3 星为及格线</div>
+    </div>
+    <div class="field" style="margin-top:14px"><label>评价维度</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.82rem;color:var(--sub)">
+        ${dims.map(d=>`<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:9px">
+          <input type="checkbox" class="rd" data-k="${d.k}"><span>${d.n}</span></label>`).join("")}
+      </div>
+    </div>
+    <div class="field" style="margin-top:14px"><label>评语（可选）</label><input id="rateCmt" placeholder="对本次合作的具体评价"></div>
+    <div class="check" style="margin-top:12px"><input type="checkbox" id="rateAnon"><label for="rateAnon">匿名提交（评语不显示你的代号）</label></div>
+    <div class="btns" style="margin-top:18px">
+      <button class="btn btn-ghost" onclick="$('#mask').classList.remove('show')">稍后评价</button>
+      <button class="btn btn-primary" onclick="submitRate(${p.id},'${role}')">提交评价</button>
+    </div>`);
+  window._rateScore=3;setRate(3);
+}
+function setRate(s){
+  window._rateScore=s;
+  $$("#rateStars span").forEach(el=>{el.style.opacity=+el.dataset.s<=s?"1":"0.35";el.style.color=+el.dataset.s<=s?"var(--gold2)":"inherit";});
+  $("#rateHint").textContent=["极差，将扣减声望","较差，报酬系数下调","及格，系数 1.0","良好，系数 1.15","优秀，系数 1.25"][s-1];
+}
+async function submitRate(pid,role){
+  const p=PENDING.find(x=>x.id===pid);if(!p)return;
+  const score=window._rateScore||3, cmt=$("#rateCmt").value.trim(), anon=$("#rateAnon").checked;
+  const dims=[...$$(".rd")].filter(c=>c.checked).map(c=>c.dataset.k);
+  const key=(role==="client"?"c":"a")+"r";
+  const payload={score,dims,comment:cmt,anonymous:anon,at:Date.now()};
+  try{await api(`/api/settlements/${pid}/rate`,{method:"POST",body:JSON.stringify(payload)},{queued:true}).catch(()=>{});}catch(e){}
+  p[key]=payload;savePending();
+  audit("互评",p.q.title,{after:{role,score,anonymous:anon}});
+  const done = p.ar&&p.cr;
+  if(!done){
+    toast(role==="client"?"已评价委托方，请等待对方评价你":"已提交评价，等待委托方确认");
+    $("#mask").classList.remove("show");
+    pushNotif({type:"quest",icon:"⭐",title:"互评已提交",desc:`「${p.q.title}」等待${role==="client"?"冒险者":"委托方"}完成评价`,link:"#profile"});
+    renderProfile(me());return;
+  }
+  /* 双方均已评价 → 结算 */
+  const u=me();
+  const base=p.amt||p.q.gold;
+  const advMul=settleMul(p.ar), cliMul=settleMul(p.cr);
+  const timeCoef=Math.max(.7,Math.min(1.15,1-(Math.max(0,p.days-+(p.q.time.match(/\d+/)||[1])[0])*.08)));
+  const coop=p.teamCoef||0;
+  const finalGold=Math.round(base*((advMul+cliMul)/2)*timeCoef*(1+coop));
+  const tax=Math.round(finalGold*.05);
+  const share=poolShare();
+  MOCK.pool=share.next;
+  const xpGain=Math.round([80000,40000,15000,4000][["S","A","B","C"].indexOf(p.q.rank)]||4000 * ((advMul+cliMul)/2));
+  u.records.push({title:p.q.title,rank:p.q.rank,date:"大陆历 742 年霜月",time:p.q.time,rated:1,score:advMul});
+  u.xp=Math.min(u.next,u.xp+xpGain);
+  if(p.q.rank==="S")u.achievements.dragonSlayer=1;
+  if(u.records.filter(r=>r.rated).length>=10)u.achievements.merchant=1;
+  if(!u.achievements.firstBlood&&advMul>=1.15)u.achievements.firstBlood=1;
+  PENDING=PENDING.filter(x=>x.id!==pid);savePending();saveRatings();saveNotifs();
+  audit("结算",p.q.title,{before:{base},after:{final:finalGold,tax,xp:xpGain,coefficient:+(advMul+cliMul)/2}});
+  pushNotif({type:"quest",icon:"💰",title:"委托已结算",desc:`「${p.q.title}」实发 ${fmt(finalGold)} 金（扣除 5% 公会托管与 ${fmt(share.rate*100).slice(0,4)}% 赏金池注入）`,link:"#profile"});
+  pushMail(mailTpl.settle(p,q,base,finalGold,tax,xpGain));
+  LS.setItem("ag_me",JSON.stringify(u));renderProfile(u);renderAdStats();invalidate(["quests","stats"]);
+  $("#mask").classList.remove("show");
+  toast("结算完成，报酬已发放至你的公会账户");
+}
+/* ---------- 结算信函模板 ---------- */
+mailTpl.settle=(p,q,base,finalGold,tax,xp)=>({type:"委托结算函",from:"公会结算处 · 银月公会",
+  subject:`「${q.title}」结算完成 · ${fmt(finalGold)} 金币已发放`,
+  body:`<div class="ml"><div class="ml-hd"><div class="ml-sigil">月</div><div class="ml-tt">银月冒险家协会<br><span>结算处 · 报酬发放函</span></div><div class="ml-seal">印</div></div>
+    <div class="ml-rule"></div><div class="ml-addr">致 <b>${esc(me().name)}</b> 阁下　登记号 SM-${String(me().id||"000000").slice(-6)}</div>
+    <p>您完成的委托 <b>${esc(q.title)}</b> 已完成双向互评，报酬已核算并发放至您的公会账户。</p>
+    <table class="ml-tb">
+      <tr><th>悬赏基准</th><td>${fmt(base)} 金</td><th>公会托管</th><td>-${fmt(tax)} 金</td></tr>
+      <tr><th>评价系数</th><td>${((p.ar&&p.cr)?((settleMul(p.ar)+settleMul(p.cr))/2).toFixed(2):"1.00")}</td><th>实际发放</th><td><b style="color:#c8a24a">${fmt(finalGold)} 金</b></td></tr>
+      <tr><th>声望增长</th><td>+${fmt(xp)}</td><th>赏金池注入</th><td>${fmt(Math.round(base*.05))} 金</td></tr>
+    </table>
+    <div class="ml-quest">${esc(q.title)}</div>
+    <p>${esc(p.proof||"")}</p>
+    <div class="ml-note"><b>结算说明</b><br>① 报酬＝悬赏基准 × 双方评价系数均值 × 时效系数 × 协作系数。<br>② 未评方已在 3 日后由公会代为补评 3 星。<br>③ 赏金池已按约定比例注入，用于加注优质委托悬赏。</div>
+    <div class="ml-foot">此致 · 愿月光护佑你的征途<br>银月冒险家协会 结算处</div></div>`});
+
+/* ---------- 竞标与组队面板（后台） ---------- */
+function renderBidPanel(){
+  const box=$("#bidPanel");if(!box)return;
+  const qid=$("#bidQFilter").value, st=$("#bidState").value;
+  const list=BIDS.filter(b=>(!qid||b.qid==+qid)&&(!st||b.state===st));
+  $("#bidStatTxt").textContent=`共 ${list.length} 份竞标`;
+  if(!list.length){box.innerHTML=`<div class="empty-m">当前没有符合条件的竞标记录</div>`;renderBidFilter();return;}
+  box.innerHTML=`<div class="bid-list">${list.map(b=>{
+    const q=MOCK.quests.find(x=>x.id===b.qid);
+    return `<div class="bid ${b.state}">
+      <div class="bid-main">
+        <div class="bid-t">${esc(q?q.title:b.qid)} <span class="mini ${b.state==="won"?"open":b.state==="lost"?"full":"soon"}">${b.state==="won"?"已中标":b.state==="lost"?"未中标":"竞标中"}</span></div>
+        <div class="bid-s">${esc(b.name)} · ${esc(b.class)} Lv.${b.lv} · 报价 ${fmt(b.amt)} 金 · ${ago(b.at)}${b.note?"　「"+esc(b.note)+"」":""}</div>
+      </div>
+      <div class="bid-amt"><b>${fmt(b.amt)}</b><span>金</span></div>
+      ${b.state==="pending"?`<div class="bid-acts"><button class="btn btn-primary btn-sm" onclick="awardBid(${b.id})">定标</button></div>`:""}
+    </div>`;}).join("")}</div>`;
+  renderBidFilter();
+}
+function renderBidFilter(){
+  const sel=$("#bidQFilter");if(!sel||sel.dataset.bound)return;
+  sel.dataset.bound=1;
+  MOCK.quests.filter(q=>MOCK.bidQuests.includes(q.id)).forEach(q=>{
+    const o=document.createElement("option");o.value=q.id;o.textContent=q.rank+" 级 · "+q.title;sel.appendChild(o);});
+  sel.onchange=renderBidPanel;$("#bidState").onchange=renderBidPanel;
+}
+function renderTeamPanel(){
+  const box=$("#teamPanel");if(!box)return;
+  const u=me();
+  const mine=TEAMS.filter(t=>t.leader===u.id);
+  const joined=TEAMS.filter(t=>t.members.some(m=>m.id===u.id)&&t.leader!==u.id);
+  const open=TEAMS.filter(t=>!t.full&&t.leader!==u.id&&!t.members.some(m=>m.id===u.id));
+  const sec=(title,arr,render)=>arr.length?`<h4 style="font-size:.95rem;margin:18px 0 8px">${title}（${arr.length}）</h4>`+arr.map(render).join(""):"";
+  box.innerHTML=
+    sec("我创建的队伍",mine,t=>`<div class="qm"><div class="rk2" style="background:var(--gold)">队</div><div class="body"><div class="t">${esc(t.name)} · ${esc(MOCK.quests.find(q=>q.id===t.qid)?.title||"")}</div><div class="d">${t.members.length-1}/${t.need} 人已入队 · ${t.full?"已满员":"招募中"} · ${esc(t.req||"无特殊要求")}</div>
+      <div class="team-roster">${t.members.map((m,i)=>`<div class="team-slot filled">${esc(m.name.slice(0,1))}<b>${esc(m.role)}</b></div>`).join("")}${Array.from({length:Math.max(0,t.need+1-t.members.length)}).map(()=>`<div class="team-slot">＋</div>`).join("")}</div>
+      ${t.applicants.length?`<div style="margin-top:10px">${t.applicants.map(a=>`<div class="applicant"><div class="ava2">${esc(a.name.slice(0,1))}</div><div class="ap-b"><div class="ap-t">${esc(a.name)}</div><div class="ap-s">${esc(a.class)} Lv.${a.lv}</div></div><div class="ap-acts"><button class="btn btn-primary btn-sm" onclick="approveMember(${t.id},${a.id},true)">批准</button><button class="btn btn-ghost btn-sm" onclick="approveMember(${t.id},${a.id},false)">婉拒</button></div></div>`).join("")}</div>`:`<div class="empty" style="padding:14px">暂无入队申请</div>`}</div>`)
+    + sec("我加入的队伍",joined,t=>`<div class="qm"><div class="rk2" style="background:var(--b)">入</div><div class="body"><div class="t">${esc(t.name)}</div><div class="d">队长 ${esc(t.leaderName)} · ${t.members.length-1}/${t.need} 人 · ${esc(MOCK.quests.find(q=>q.id===t.qid)?.title||"")}</div></div><span class="mini open">已入队</span></div>`)
+    + sec("可申请的队伍",open,t=>`<div class="qm"><div class="rk2" style="background:var(--c)">募</div><div class="body"><div class="t">${esc(t.name)}</div><div class="d">${t.members.length-1}/${t.need} 人 · ${esc(t.req||"无特殊要求")} · ${esc(MOCK.quests.find(q=>q.id===t.qid)?.title||"")}</div></div><button class="btn btn-primary btn-sm" onclick="applyTeam(${t.id})">申请加入</button></div>`)
+    || `<div class="empty-m">当前没有可申请的队伍，可前往任务板创建</div>`;
+}
+/* 档案页「我创建的队伍」迷你视图 */
+function renderMyTeams(list){
+  const box=$("#myTeams");if(!box||!list.length)return;
+  box.innerHTML=list.map(t=>`<div class="qm"><div class="rk2" style="background:var(--gold)">队</div><div class="body"><div class="t">${esc(t.name)}</div><div class="d">${t.members.length-1}/${t.need} 人 · ${t.applicants.length} 份申请</div></div></div>`).join("");
+}
+
+/* ---------- 数据看板 ---------- */
+function renderDashboard(){
+  if(!$("#dashCards"))return;
+  const total=Object.keys(MOCK.quests).length+1;
+  const done=PENDING.filter(p=>p.ar&&p.cr).length;
+  const rate=Math.round(MOCK.quests.filter(q=>!q.open).length/Math.max(1,MOCK.quests.length)*100);
+  const tags={};MOCK.quests.forEach(q=>q.tags.forEach(t=>tags[t]=(tags[t]||0)+1));
+  const rankDone={"S":0,"A":0,"B":0,"C":0};MOCK.quests.filter(q=>!q.open).forEach(q=>rankDone[q.rank]++);
+  const adv=MOCK.adventurers;
+  const segs=[["青铜",0,3000,"#8a8fad"],["白银",3000,8000,"#c0c6d8"],["黄金",8000,15000,"#e8aa3c"],["铂金",15000,30000,"#7fd4e0"],["钻石",30000,1e9,"#c89bff"]];
+  const segData=segs.map(s=>({n:s[0],v:adv.filter(a=>a.xp>=s[1]&&a.xp<s[2]).length,c:s[3]}));
+  const trend=Array.from({length:7},(_,i)=>{const d=new Date(Date.now()-864e5*(6-i));return {l:(d.getMonth()+1)+"/"+d.getDate(),v:Math.floor(Math.random()*9+2),s:Math.floor(Math.random()*4)};});
+  $("#dashCards").innerHTML=[
+    {l:"委托完成率",v:rate+"%",d:"较上周 +4.2%",up:1},
+    {l:"累计结算",v:fmt(done),d:"本周 +"+Math.floor(Math.random()*9+3),up:1},
+    {l:"在册冒险者",v:fmt(adv.length),d:"Lv.60 以上 "+adv.filter(a=>a.lv>=60).length+" 人",up:1},
+    {l:"赏金池余额",v:fmt(MOCK.pool)+" 金",d:"本周注入 "+fmt(Math.round(MOCK.pool*.05))+" 金",up:0}
+  ].map(c=>`<div class="card"><div class="d-label">${c.l}</div><div class="d-val">${c.v}</div><div class="d-delta ${c.up?"up":"down"}">${c.d}</div></div>`).join("");
+  $("#dashRateSub").textContent=`S 级 ${rankDone.S} 件 · A 级 ${rankDone.A} 件 · B 级 ${rankDone.B} 件 · C 级 ${rankDone.C} 件`;
+  $("#dashRate").innerHTML=Object.keys(rankDone).map(k=>`<div class="bar-row"><span class="b-label">${k} 级</span><div class="bar-track"><div class="bar-fill" data-w="${Math.round(rankDone[k]/Math.max(1,Object.values(rankDone).reduce((a,b)=>a+b,0))*100)}"></div></div><span class="b-val">${rankDone[k]} 件</span></div>`).join("");
+  const sorted=Object.entries(tags).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  $("#dashTags").innerHTML=sorted.map(([k,v])=>`<div class="bar-row"><span class="b-label">#${k}</span><div class="bar-track"><div class="bar-fill" data-w="${Math.round(v/sorted[0][1]*100)}"></div></div><span class="b-val">${v} 次</span></div>`).join("");
+  $("#dashDonut").style.background=`conic-gradient(${segData.map((s,i)=>`${s.c} ${(segData.slice(0,i).reduce((a,b)=>a+b.v,0)/adv.length*100)%360}% ${(segData.slice(0,i+1).reduce((a,b)=>a+b.v,0)/adv.length*100)%360}%`).join(",")})`;
+  $("#dashDonut").innerHTML=`<b>${adv.length}</b>`;
+  $("#dashDonutLegend").innerHTML=segData.map(s=>`<div><i style="background:${s.c}"></i><span>${s.n}　${s.v} 人</span><b>${Math.round(s.v/adv.length*100)}%</b></div>`).join("");
+  $("#dashTrend").innerHTML=trend.map(t=>`<div class="bar-row"><span class="b-label">${t.l}</span><div class="bar-track"><div class="bar-fill" data-w="${Math.round(t.v/12*100)}" style="background:linear-gradient(90deg,#5fd0a0,#3aa87c)"></div></div><span class="b-val">${t.v} 件 / 💰${t.s}</span></div>`).join("");
+  setTimeout(()=>$$(".bar-fill").forEach(b=>b.style.width=b.dataset.w+"%"),60);
+  const avg=+((AUDIT.filter(a=>a.act==="登录").length)||0);
+  $("#auditCards").innerHTML=[
+    {l:"操作记录",v:AUDIT.length,d:"保留最近 200 条",up:0},
+    {l:"涉险操作",v:AUDIT.filter(a=>a.risk).length,d:"冻结/上下架/定标/结算",up:0},
+    {l:"本月登录",v:avg||12,d:"较上月 +"+(Math.floor(Math.random()*20)+5)+"%",up:1},
+    {l:"待办事项",v:BIDS.filter(b=>b.state==="pending").length+PENDING.filter(p=>!p.delivered).length,d:"竞标待定标 + 待交付",up:0}
+  ].map(c=>`<div class="card" style="padding:16px 18px"><div class="d-label">${c.l}</div><div class="d-val" style="font-size:1.6rem">${c.v}</div><div class="d-delta ${c.up?"up":"down"}">${c.d}</div></div>`).join("");
+  renderAudit();
+}
+function renderAuditCards(){const avg=+((AUDIT.filter(a=>a.act==="登录").length)||0);}
+function renderAudit(){
+  const t=$("#auditTable");if(!t)return;
+  const who=$("#afWho").value.trim(), act=$("#afAct").value, since=+$("#afRange").value;
+  const sinceTs=since?Date.now()-since*864e5:0;
+  const rows=AUDIT.filter(a=>(!who||a.who.includes(who))&&(!act||a.act===act)&&a.at>=sinceTs);
+  $("#nAudit").textContent=rows.length>0?rows.length:"";
+  if(!rows.length){t.innerHTML=`<div class="empty-m">该筛选条件下没有操作记录</div>`;return;}
+  t.innerHTML=`<thead><tr><th>时间</th><th>操作者</th><th>角色</th><th>动作</th><th>操作对象</th><th>变更前</th><th>变更后</th><th>来源</th><th>风险</th></tr></thead><tbody>`
+    +rows.slice(0,80).map(a=>`<tr>
+      <td style="white-space:nowrap">${new Date(a.at).toLocaleString("zh-CN").slice(5)}</td>
+      <td>${esc(a.who)}</td><td style="color:var(--gold2)">${esc({master:"会长",clerk:"执事",adventurer:"冒险者",guest:"访客",system:"系统"}[a.role]||a.role)}</td>
+      <td><span class="mini ${a.risk?"full":"soon"}">${esc(a.act)}</span></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.obj)}</td>
+      <td style="color:var(--sub);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.before)}</td>
+      <td style="color:#5fd0a0;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.after)}</td>
+      <td style="color:var(--sub)">${esc(a.ip)}</td>
+      <td>${a.risk?'<span class="mini full">涉险</span>':'<span class="mini open">常规</span>'}</td></tr>`).join("")
+    +`</tbody>`;
+}
+if($("#afWho")) $("#afWho").oninput=renderAudit;
+if($("#afAct")) $("#afAct").onchange=renderAudit;
+if($("#afRange")) $("#afRange").onchange=renderAudit;
+
+/* ---------- 消息通知中心 ---------- */
+let notifTab="all";
+function renderNotifBadge(){
+  const n=NOTIFS.filter(m=>!m.read).length,b=$("#notifBadge");
+  if(!b)return;
+  b.textContent=n>9?"9+":n;b.style.display=n?"flex":"none";
+  const d=$("#notifDot");if(d)d.style.display=n?"block":"none";
+}
+function renderNotifDot(){$("#notifDot").style.display=NOTIFS.filter(m=>!m.read).length?"block":"none";}
+function openNotif(){
+  $("#notifMask").classList.add("show");$("#notifList").style.display="block";renderNotifList();
+}
+function closeNotif(){$("#notifMask").classList.remove("show");}
+$("#notifMask").addEventListener("click",e=>{if(e.target===$("#notifMask"))closeNotif();});
+$("#navNotif").onclick=openNotif;
+$$(".notif-tab").forEach(t=>t.onclick=()=>{notifTab=t.dataset.nt;$$(".notif-tab").forEach(x=>x.classList.toggle("on",x.dataset.nt===notifTab));renderNotifList();});
+function renderNotifList(){
+  const box=$("#notifList");if(!box)return;
+  const list=NOTIFS.filter(n=>notifTab==="all"||n.type===notifTab);
+  if(!list.length){box.innerHTML=`<div class="nt-empty"><div class="nt-empty-ic">🔔</div>暂无消息<br><span style="font-size:.82rem;opacity:.7">重要动态会同时送入公会信箱留存</span></div>`;return;}
+  box.innerHTML=list.map((n,i)=>`<div class="nt ${n.read?"":"unread"}" onclick="readNotif(${n.id})">
+    <div class="nt-ic">${n.icon||"📨"}</div>
+    <div class="nt-b"><div class="nt-t">${esc(n.title)}</div><div class="nt-d">${esc(n.desc)}</div></div>
+    <div class="nt-w">${fromNow(n.at)}</div></div>`).join("");
+}
+function readNotif(id){
+  const n=NOTIFS.find(x=>x.id===id);if(!n)return;
+  n.read=1;saveNotifs();renderNotifBadge();
+  if(n.link==="#profile"&&n.title.includes("结算")){location.hash="#profile";}
+  toast(n.title);
+}
+function markAllNotifRead(){NOTIFS.forEach(n=>n.read=1);saveNotifs();renderNotifBadge();renderNotifList();toast("全部消息已标为已读");}
+/* 演示种子：首次进入给出系统通告 */
+(function seedNotif(){
+  if(LS.getItem("ag_notif_seeded"))return;
+  LS.setItem("ag_notif_seeded","1");
+  pushNotif({type:"system",icon:"📯",title:"欢迎来到银月冒险家协会",desc:"承接委托后请在约定时间内提交交付凭证，超时将影响声望评定",read:1});
+  pushNotif({type:"quest",icon:"📜",title:"本周新增 3 件 S 级委托",desc:"北境红龙讨伐、古王陵封印、深渊裂隙调查现已开放竞标",read:1});
+})();
+
+/* ---------- 任务板追加「组队」入口 ---------- */
+(function(){
+  const box=$("#questsBox");if(!box)return;
+  const mo=new MutationObserver(()=>{
+    $$("#questsBox .quest").forEach(el=>{
+      if(el.dataset.teamBound)return;el.dataset.teamBound=1;
+      const btn=el.querySelector(".q-foot .btn-ghost");
+      if(btn&&btn.textContent.includes("竞标")){
+        const id=+btn.getAttribute("onclick").match(/\d+/)[0];
+        const wrap=document.createElement("button");
+        wrap.className="btn btn-sm btn-ghost";wrap.style.marginRight="8px";
+        wrap.textContent="🛡 组建小队";wrap.onclick=()=>openTeam(id);
+        btn.parentNode.insertBefore(wrap,btn);
+      }
+    });
+  });
+  mo.observe(box,{childList:true,subtree:true});
+})();
+</script>
+</body>
+</html>

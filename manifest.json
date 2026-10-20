@@ -1,0 +1,40 @@
+{
+  "name": "银月冒险家协会",
+  "short_name": "银月公会",
+  "description": "委托任务板 · 活动发布 · 冒险者档案 · 公会信箱",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icon-72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "maskable any" },
+    { "src": "icon-96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "maskable any" },
+    { "src": "icon-128.png",  "sizes": "128x128", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icon-144.png",  "sizes": "144x144", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icon-152.png",  "sizes": "152x152", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icon-192.png",  "sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icon-384.png",  "sizes": "384x384", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icon-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icon-192.png",  "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "apple": {
+    "icons": [
+      { "src": "icon-152.png", "sizes": "152x152", "type": "image/png" },
+      { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }
+    ]
+  },
+  "screenshots": [
+    { "src": "splash.png", "sizes": "1170x2532", "type": "image/png", "form_factor": "narrow" }
+  ],
+  "shortcuts": [
+    { "name": "委托任务板", "short_name": "委托", "url": "/#quests",  "icons": [{ "src": "icon-96.png", "sizes": "96x96" }] },
+    { "name": "我的档案",   "short_name": "档案", "url": "/#profile", "icons": [{ "src": "icon-96.png", "sizes": "96x96" }] },
+    { "name": "公会信箱",   "short_name": "信箱", "url": "/#mail",    "icons": [{ "src": "icon-96.png", "sizes": "96x96" }] }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

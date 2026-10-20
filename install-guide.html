@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>安装银月公会 · 手机端指引</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#0a0814;color:#e9e6f5;line-height:1.75;-webkit-text-size-adjust:100%}
+.wrap{max-width:720px;margin:0 auto;padding:28px 20px 80px}
+header{text-align:center;padding:34px 0 26px;border-bottom:1px solid rgba(232,200,106,.22);margin-bottom:8px}
+.sigil{width:72px;height:72px;margin:0 auto 14px;background:radial-gradient(circle at 35% 30%,#5a4a8a,#2a2248);border:2px solid #e8c86a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 10px 30px rgba(232,200,106,.25)}
+h1{font-size:1.7rem;color:#e8c86a;margin-bottom:8px}
+.sub{color:#a89fd0;font-size:.92rem}
+.badge-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.b{min-width:74px;background:rgba(26,22,46,.72);border:1px solid rgba(232,200,106,.22);border-radius:10px;padding:8px 6px;text-align:center}
+.b b{display:block;color:#e8c86a;font-size:1.15rem}
+.b span{font-size:.72rem;color:#a89fd0}
+h2{font-size:1.15rem;color:#f4e2a8;margin:34px 0 12px;padding-left:11px;border-left:3px solid #e8c86a}
+p{margin:9px 0;font-size:.96rem;color:#d8d2ec}
+ol{margin:10px 0 0 22px}
+li{margin:11px 0;font-size:.95rem}
+.step{background:rgba(26,22,46,.6);border:1px solid rgba(232,200,106,.18);border-radius:14px;padding:16px 16px 14px;margin-top:14px}
+.step .n{display:inline-block;min-width:24px;height:24px;line-height:24px;text-align:center;background:#e8c86a;color:#201a3d;border-radius:50%;font-size:.8rem;font-weight:800;margin-right:8px}
+.warn{background:rgba(224,91,74,.1);border:1px solid rgba(224,91,74,.45);border-radius:12px;padding:13px 15px;margin-top:14px;font-size:.88rem;color:#f0c9c2}
+.warn b{color:#ff8a78}
+.tip{background:rgba(79,159,208,.1);border:1px solid rgba(79,159,208,.4);border-radius:12px;padding:13px 15px;margin-top:14px;font-size:.88rem;color:#cfe6f5}
+.tip b{color:#7fc4ee}
+.kbd{display:inline-block;background:#1a162e;border:1px solid rgba(232,200,106,.35);border-radius:6px;padding:1px 8px;font-size:.85rem;color:#e8c86a;margin:0 2px}
+.row{display:flex;gap:10px;margin-top:14px}
+.card{flex:1;background:rgba(26,22,46,.6);border:1px solid rgba(232,200,106,.18);border-radius:12px;padding:13px;text-align:center}
+.card b{color:#e8c86a;display:block;margin-bottom:5px;font-size:.9rem}
+.card span{font-size:.8rem;color:#a89fd0}
+pre{background:#121024;border:1px solid rgba(232,200,106,.2);border-radius:10px;padding:12px 13px;overflow:auto;font-size:.82rem;color:#c3b9e0;margin-top:10px;white-space:pre-wrap;word-break:break-all}
+a{color:#e8c86a}
+footer{text-align:center;color:#7d7499;font-size:.78rem;margin-top:40px;padding-top:20px;border-top:1px solid rgba(232,200,106,.15)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="sigil">月</div>
+  <h1>把银月公会装进手机</h1>
+  <div class="sub">通路一 · 零安装部署 + 添加到主屏幕 = 手机 App</div>
+  <div class="badge-row">
+    <div class="b"><b>10 分钟</b><span>总耗时</span></div>
+    <div class="b"><b>0 元</b><span>全部免费</span></div>
+    <div class="b"><b>0 安装</b><span>不用装软件</span></div>
+    <div class="b"><b>双平台</b><span>iPhone / 安卓</span></div>
+  </div>
+</header>
+
+<h2>开始前：两个必须知道的前提</h2>
+<div class="warn">
+<b>① 手机上必须能用浏览器打开 https 网址。</b>免费静态托管（Vercel / GitHub Pages）给的都是 https，条件天然满足；如果你自己用 http 搭服务器，iPhone <b>无法</b>安装到主屏幕。
+</div>
+<div class="warn">
+<b>② 微信里打不开「添加到主屏幕」。</b>iPhone 只能用 Safari，安卓只能用 Chrome。微信里点开链接后，务必点右上角 <b>「···」→「在 Safari 中打开」</b>（安卓是「在浏览器打开」），这是小白卡住的第一名原因。
+</div>
+
+<h2>第一步：把代码存到 GitHub（一次性）</h2>
+<div class="step">
+<p><span class="n">1</span>电脑浏览器打开 <a href="https://github.com">github.com</a>，注册并登录（邮箱验证要做完）。</p>
+<p><span class="n">2</span>右上角 <b>+</b> → <b>New repository</b>。</p>
+<p><span class="n">3</span>Repository name 填 <b>silvermoon</b>（只能英文、数字、横杠），下面选 <b>Public</b>，<b>不要</b>勾 "Add a README"。</p>
+<p><span class="n">4</span>点绿色 <b>Create repository</b>。</p>
+<p><span class="n">5</span>在跳转页找到 <b>uploading an existing file</b>（或 "choose your files"），把压缩包里 <b>www 文件夹内的全部文件</b>拖进去。</p>
+<p><span class="n">6</span>拖完后拉到底，点 <b>Commit changes</b>。</p>
+<div class="tip"><b>没电脑只有手机？</b>GitHub 移动端网页也能上传，但一次只能选一个文件，比较累。建议借台电脑，5 分钟搞定。</div>
+</div>
+
+<h2>第二步：部署上线（30 秒，点三下）</h2>
+<div class="step">
+<p><span class="n">1</span>打开 <a href="https://vercel.com">vercel.com</a>，点 <b>Continue with GitHub</b> 登录并授权。</p>
+<p><span class="n">2</span>点 <b>Add New → Project</b>。</p>
+<p><span class="n">3</span>在 Import Git Repository 列表里找到刚才的 <b>silvermoon</b>，点 <b>Import</b>。</p>
+<p><span class="n">4</span>Configure Project 页面：<b>什么都不用改</b>，直接点 <b>Deploy</b>。</p>
+<p><span class="n">5</span>等约 40 秒，出现 <b>Congratulations!</b> 和一个 <b>Visit</b> 按钮。</p>
+<p><span class="n">6</span>点 Visit，网址形如 <b>https://silvermoon.vercel.app</b> —— <b>复制它，这就是你的 App 地址</b>。</p>
+<div class="tip">部署失败 99% 是因为根目录没放对。Vercel 默认认 <b>index.html</b> 在仓库根目录；如果报 "No Framework Detected"，把 <b>Framework Preset</b> 改成 <b>Other</b> 再 Deploy 一次。</div>
+</div>
+
+<h2>第三步：iPhone 装到桌面（Safari）</h2>
+<div class="step">
+<p><span class="n">1</span>打开手机 <b>Safari</b>（苹果自带，别用微信、QQ、Chrome）。</p>
+<p><span class="n">2</span>地址栏输入刚才复制的 <b>https://silvermoon.vercel.app</b>，回车。</p>
+<p><span class="n">3</span>等页面完全加载出来（看到深紫色公会界面）。</p>
+<p><span class="n">4</span>点底部 <b>分享按钮</b><span class="kbd">⬆</span>（方框带向上箭头，在地址栏下方一行）。</p>
+<p><span class="n">5</span>在弹出的面板里 <b>往下滑</b>，找到 <b>「添加到主屏幕」</b>（Add to Home Screen）。</p>
+<p><span class="n">6</span>名称默认 <b>银月公会</b>，可改成你想要的名字，点右上角 <b>添加</b>。</p>
+<p><span class="n">7</span>回到手机桌面 ✅ <b>多了一个公会图标</b>，点开就是全屏 App，没有地址栏。</p>
+</div>
+<div class="tip"><b>找不到「添加到主屏幕」？</b>按这个顺序排查：① 用的是不是 Safari（最常见）② 网址是不是 https（http 会藏起来这个选项）③ 页面有没有完全加载完（加载到一半滑不出来）④ 系统是不是 iOS 16 以上（更低版本路径相同，只是图标样式旧）。</div>
+
+<h2>第四步：安卓装到桌面（Chrome）</h2>
+<div class="step">
+<p><span class="n">1</span>打开手机 <b>Chrome</b>（别用微信、夸克、手机自带浏览器）。</p>
+<p><span class="n">2</span>地址栏输入 <b>https://silvermoon.vercel.app</b> 回车，等页面加载完。</p>
+<p><span class="n">3</span>出现两种情况，<b>任一</b>即可：</p>
+<p>&nbsp;&nbsp;· 地址栏右侧弹出 <b>「安装」小图标</b>（一个手机带向下箭头）→ 点它 → 点 <b>安装</b>。</p>
+<p>&nbsp;&nbsp;· 没弹图标 → 点右上角 <b>⋮</b> 菜单 → 找 <b>「安装应用」</b>或<b>「添加到主屏幕」</b>。</p>
+<p><span class="n">4</span>确认后桌面出现图标，点开即全屏。</p>
+</div>
+<div class="tip"><b>Chrome 没弹出安装提示？</b>清掉地址栏的 <b>#</b> 后面的内容（只留纯网址），刷新一次再试；或者升级 Chrome 到最新版。</div>
+
+<h2>第五步：验证装对了没有</h2>
+<div class="row">
+  <div class="card"><b>✅ 正常</b><span>桌面图标点开 → 全屏、无地址栏、底部有五个 Tab</span></div>
+  <div class="card"><b>❌ 没装上</b><span>点开还是浏览器页面、顶部有地址栏</span></div>
+</div>
+<p style="margin-top:12px">装好后试三件事：<b>下拉刷新</b>委托板、<b>右滑</b>返回、<b>登录</b>后承接一件委托看信箱是否收到信函。断网再打开，历史页面仍能看（Service Worker 离线壳生效）。</p>
+
+<h2>常用问题</h2>
+<table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem">
+<tr style="border-bottom:1px solid rgba(232,200,106,.2)"><td style="padding:9px 6px;color:#e8c86a;width:38%">点开图标白屏</td><td style="padding:9px 6px">删掉重装一次；多半是部署时文件没传全，回 GitHub 确认 index.html / sw.js / manifest.json 都在</td></tr>
+<tr style="border-bottom:1px solid rgba(232,200,106,.2)"><td style="padding:9px 6px;color:#e8c86a">数据好像丢了</td><td style="padding:9px 6px">换了浏览器或清了缓存会丢；演示数据存在浏览器本地，换设备不共享</td></tr>
+<tr style="border-bottom:1px solid rgba(232,200,106,.2)"><td style="padding:9px 6px;color:#e8c86a">想换网址</td><td style="padding:9px 6px">Vercel 项目 Settings → Domains，可绑自己的域名</td></tr>
+<tr style="border-bottom:1px solid rgba(232,200,106,.2)"><td style="padding:9px 6px;color:#e8c86a">想接真后端</td><td style="padding:9px 6px">把前端 BASE 改成你的服务器地址，然后按《部署指南》里的后端部分起服务</td></tr>
+<tr><td style="padding:9px 6px;color:#e8c86a">想真机原生包</td><td style="padding:9px 6px">看《iOS部署指南》和《Android部署指南》，需要 Mac / Android Studio</td></tr>
+</table>
+
+<h2>更新网站内容后</h2>
+<p>改完代码 → 在 GitHub 对应文件点 <b>Edit</b> 修改 → Commit。Vercel 会自动重新部署，用户手机端<b>下次打开自动更新</b>，不用重新添加到桌面。</p>
+
+<footer>
+银月冒险家协会 · 通路一部署包 &nbsp;|&nbsp; PWA 已含离线壳 + iOS/安卓双平台图标 + 安装引导<br>
+本包可直接用于 Vercel / GitHub Pages / 任意静态托管
+</footer>
+
+</div>
+</body>
+</html>
